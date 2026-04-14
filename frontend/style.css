@@ -10,6 +10,18 @@
     --swatch-bg: rgba(0, 0, 0, 0.08);
 }
 
+body.theme-calm {
+    --bg-start: #F0E1C8;
+    --bg-end: #e4d3b6;
+    --text: #3C332A;
+    --muted: #6b625a;
+
+    --panel-bg: rgba(255, 255, 255, 0.65);
+    --panel-hover: rgba(0, 0, 0, 0.04);
+    --panel-active: rgba(0, 0, 0, 0.06);
+    --swatch-bg: rgba(0, 0, 0, 0.08);
+}
+
 body.theme-lavender {
     --bg-start: #ADA6C2;
     --bg-end: #9c90be;
@@ -39,18 +51,6 @@ body.theme-sage {
     --bg-end: #e8ece3;
     --text: #2d332b;
     --muted: #667061;
-
-    --panel-bg: rgba(255, 255, 255, 0.65);
-    --panel-hover: rgba(0, 0, 0, 0.04);
-    --panel-active: rgba(0, 0, 0, 0.06);
-    --swatch-bg: rgba(0, 0, 0, 0.08);
-}
-
-body.theme-warm {
-    --bg-start: #f8f4ef;
-    --bg-end: #f1ebe3;
-    --text: #2f241c;
-    --muted: #6b625a;
 
     --panel-bg: rgba(255, 255, 255, 0.65);
     --panel-hover: rgba(0, 0, 0, 0.04);
@@ -212,6 +212,12 @@ h1 {
     pointer-events: auto;
 }
 
+.theme-option[data-theme="calm"] {
+    --swatch-1: #3C332A;
+    --swatch-2: #6b625a;
+    --swatch-3: #f1ebe3;
+}
+
 .theme-option[data-theme="lavender"] {
     --swatch-1: #cbb6ff;
     --swatch-2: #6d5ca8;
@@ -227,13 +233,7 @@ h1 {
 .theme-option[data-theme="sage"] {
     --swatch-1: #2d332b;
     --swatch-2: #a7b5a0;
-    --swatch-3: #e8ece3;
-}
-
-.theme-option[data-theme="warm"] {
-    --swatch-1: #2f241c;
-    --swatch-2: #c8a97e;
-    --swatch-3: #f1ebe3;
+    --swatch-3: #F0E1C8;
 }
 
 .theme-option {
