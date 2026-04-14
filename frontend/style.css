@@ -11,10 +11,10 @@
 }
 
 body.theme-lavender {
-    --bg-start: #1a0f2b;
-    --bg-end: #12081f;
-    --text: #e9e4f5;
-    --muted: #9b8fb3;
+    --bg-start: #ADA6C2;
+    --bg-end: #9c90be;
+    --text: #2F2A41;
+    --muted: #E4E3E8;
 
     --panel-bg: rgba(28, 18, 45, 0.78);
     --panel-hover: rgba(255, 255, 255, 0.06);
