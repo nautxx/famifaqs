@@ -178,7 +178,11 @@ const DYK = {
 
   // Set active theme and persist it
   setTheme(themeName) {
-    document.body.classList.remove("theme-warm", "theme-night", "theme-sage");
+    const themeClasses = Array.from(document.body.classList).filter(
+      (className) => className.startsWith("theme-"),
+    );
+
+    document.body.classList.remove(...themeClasses);
     document.body.classList.add(`theme-${themeName}`);
     localStorage.setItem("dyk-theme", themeName);
 
