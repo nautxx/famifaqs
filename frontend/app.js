@@ -1,4 +1,4 @@
-const DYK = {
+const Carousel = {
   // Core configuration for timing, data source, and messages
   config: {
     factsUrl: "/facts.json",
@@ -46,7 +46,7 @@ const DYK = {
 
   // Apply saved theme on load
   applySavedTheme() {
-    const savedTheme = localStorage.getItem("dyk-theme") || "warm";
+    const savedTheme = localStorage.getItem("Carousel-theme") || "warm";
     this.setTheme(savedTheme);
   },
 
@@ -184,7 +184,7 @@ const DYK = {
 
     document.body.classList.remove(...themeClasses);
     document.body.classList.add(`theme-${themeName}`);
-    localStorage.setItem("dyk-theme", themeName);
+    localStorage.setItem("Carousel-theme", themeName);
 
     document.querySelectorAll("[data-theme]").forEach((button) => {
       button.classList.toggle("is-active", button.dataset.theme === themeName);
@@ -347,5 +347,5 @@ const DYK = {
 
 // Initialize when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
-  DYK.init();
+  Carousel.init();
 });
