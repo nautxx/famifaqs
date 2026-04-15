@@ -447,7 +447,7 @@ const Carousel = {
     filter ${duration}ms ease
   `;
     factEl.style.opacity = "0";
-    factEl.style.filter = "blur(2px)";
+    factEl.style.filter = "blur(1px)";
 
     window.setTimeout(() => {
       factEl.textContent = fact.text || "";
