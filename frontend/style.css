@@ -85,7 +85,7 @@ h1 {
     font-weight: 500;
     letter-spacing: 0.02em;
     line-height: 1;
-    color: var(--sub-color);
+    color: var(--text-color);
     z-index: 1000;
     user-select: none;
 }
@@ -111,7 +111,7 @@ h1 {
 .bottom-bar button:hover,
 .bottom-bar a:hover {
     opacity: 0.9;
-    color: var(--text-color);
+    color: var(--sub-color);
     transform: translateY(-1px);
 }
 
@@ -119,12 +119,12 @@ h1 {
 .bottom-bar a:focus-visible {
     outline: none;
     opacity: 1;
-    color: var(--text-color);
+    color: var(--sub-color);
 }
 
 .bottom-bar button.is-active {
     opacity: 1;
-    color: var(--text-color);
+    color: var(--sub-color);
 }
 
 #theme-toggle {
@@ -235,15 +235,15 @@ h1 {
 }
 
 .swatch i:nth-child(1) {
-    background: var(--swatch-text);
+    background: var(--swatch-main);
 }
 
 .swatch i:nth-child(2) {
-    background: var(--swatch-sub);
+    background: var(--swatch-text);
 }
 
 .swatch i:nth-child(3) {
-    background: var(--swatch-sub-alt);
+    background: var(--swatch-sub);
 }
 
 body {
