@@ -6,6 +6,7 @@
  * @property {string} [type]
  * @property {number} [priority]
  * @property {boolean} [active]
+ * @property {string} [eventDate]
  */
 
 /**
@@ -197,16 +198,91 @@ const Carousel = {
     }
   },
 
-  // Validate and clean incoming facts
-  normalizeFacts(facts) {
-    return (facts || []).filter((fact) => {
-      return (
-        fact &&
-        typeof fact.text === "string" &&
-        fact.text.trim() &&
-        fact.active !== false
+  /**
+   * Return full years since a given date.
+   * @param {string} dateString
+   * @returns {number}
+   */
+  getFullYearsSince(dateString) {
+    const today = new Date();
+    const date = new Date(dateString);
+
+    if (Number.isNaN(date.getTime())) return 0;
+
+    let years = today.getFullYear() - date.getFullYear();
+
+    const hasNotReachedAnniversary =
+      today.getMonth() < date.getMonth() ||
+      (today.getMonth() === date.getMonth() &&
+        today.getDate() < date.getDate());
+
+    if (hasNotReachedAnniversary) {
+      years -= 1;
+    }
+
+    return Math.max(0, years);
+  },
+
+  /**
+   * Format singular/plural count.
+   * @param {number} value
+   * @param {string} singular
+   * @param {string} plural
+   * @returns {string}
+   */
+  formatCount(value, singular, plural) {
+    return `${value} ${value === 1 ? singular : plural}`;
+  },
+
+  /**
+   * Expand dynamic template values.
+   * Supported placeholder:
+   * - {years}
+   *
+   * @param {string} template
+   * @param {Fact} fact
+   * @returns {string}
+   */
+  renderFactTemplate(template, fact) {
+    let text = template;
+
+    if (text.includes("{years}") && fact.eventDate) {
+      const years = this.getFullYearsSince(fact.eventDate);
+      text = text.replaceAll(
+        "{years}",
+        this.formatCount(years, "year", "years"),
       );
-    });
+    }
+
+    return text;
+  },
+
+  /**
+   * Validate, clean, and expand incoming facts.
+   * @param {Fact[]} facts
+   * @returns {Fact[]}
+   */
+  normalizeFacts(facts) {
+    return (facts || [])
+      .filter((fact) => fact && fact.active !== false)
+      .map((fact) => {
+        const normalizedFact = { ...fact };
+
+        if (
+          typeof normalizedFact.template === "string" &&
+          normalizedFact.template.trim()
+        ) {
+          normalizedFact.text = this.renderFactTemplate(
+            normalizedFact.template,
+            normalizedFact,
+          );
+        }
+
+        return normalizedFact;
+      })
+      .filter((fact) => {
+        return typeof fact.text === "string" && fact.text.trim();
+      });
   },
 
   // Return a weight for each fact based on priority

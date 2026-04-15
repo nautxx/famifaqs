@@ -505,6 +505,15 @@
       "priority": 2
     },
     {
+      "id": 500,
+      "template": "It has been {years} since Kara and Tim got married.",
+      "type": "timeline",
+      "eventDate": "2011-07-23",
+      "tags": ["wedding", "countup"],
+      "active": true,
+      "priority": 3
+    },
+    {
       "id": 600,
       "text": "Jason’s favorite Filipino dish is sinigang—preferably loaded with extra tamarind and turned up extra spicy. He’s also a big fan of sisig for that chopped crispy pork explosion with a citrusy bite and an addictive fat-crunch balance.",
       "type": "favorite",
@@ -513,7 +522,7 @@
       "priority": 3
     },
     {
-      "id": 700,
+      "id": 601,
       "text": "Gerald’s favorite Filipino dishes are kare-kare, crispy pata, and beef sinigang.",
       "type": "favorite",
       "tags": ["food", "favorite"],
@@ -521,7 +530,7 @@
       "priority": 3
     },
     {
-      "id": 900,
+      "id": 602,
       "text": "Krystle’s favorite Filipino dish is ampalaya, the bitter the better.",
       "type": "favorite",
       "tags": ["food", "favorite"],
