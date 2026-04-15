@@ -212,7 +212,7 @@ h1 {
 }
 
 .theme-option.is-active {
-    background: color-mix(in srgb, var(--surface-active-color) 15%, transparent);
+    background: color-mix(in srgb, var(--surface-active-color) 90%, transparent);
     color: var(--surface-text-color);
     opacity: 1;
 }
@@ -259,7 +259,7 @@ body {
     transition:
         color 0.18s ease,
         background 0.18s ease,
-        opacity 0.4s ease;
+        opacity 0.18s ease;
 }
 
 .theme-modal-panel {
