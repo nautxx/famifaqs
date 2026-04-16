@@ -113,6 +113,14 @@
       "priority": 3
     },
     {
+      "id": 15,
+      "text": "Males currently outnumber females in the family, 37 to 28.",
+      "type": "stat",
+      "tags": ["gender", "family-size"],
+      "active": true,
+      "priority": 3
+    },
+    {
       "id": 101,
       "text": "Arthur, Bernardo Sr., and Leopoldo were all born within just a few years of each other in the late 1940s.",
       "type": "generation",
@@ -142,14 +150,6 @@
       "type": "generation",
       "tags": ["multi-generation"],
       "active": true,
-      "priority": 2
-    },
-    {
-      "id": 105,
-      "text": "The Barnachea name has been passed down through three generations.",
-      "type": "name",
-      "tags": ["last-name"],
-      "active": false,
       "priority": 2
     },
     {
