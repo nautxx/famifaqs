@@ -2,7 +2,7 @@
 :root {
     --bg-color: #f8f4ef;
     --bg-alt-color: #f1ebe3;
-    --main-color: #C5B4E2;
+    --accent-color: #C5B4E2;
     --text-color: #2f241c;
     --sub-color: #6b625a;
 
@@ -15,7 +15,7 @@
 body.theme-calm {
     --bg-color: #F0E1C8;
     --bg-alt-color: #e4d3b6;
-    --main-color: #6b625a;
+    --accent-color: #6b625a;
     --text-color: #3C332A;
     --sub-color: #6b625a;
 
@@ -28,7 +28,7 @@ body.theme-calm {
 body.theme-lavender {
     --bg-color: #ADA6C2;
     --bg-alt-color: #9c90be;
-    --main-color: #E4E3E8;
+    --accent-color: #E4E3E8;
     --text-color: #E4E3E8;
     --sub-color: #2F2A41;
 
@@ -41,7 +41,7 @@ body.theme-lavender {
 body.theme-muted {
     --bg-color: #525252;
     --bg-alt-color: #4a4a4a;
-    --main-color: #C5B4E2;
+    --accent-color: #C5B4E2;
     --text-color: #939EAD;
     --sub-color: #B1E3E3;
 
@@ -54,7 +54,7 @@ body.theme-muted {
 body.theme-paper {
     --bg-color: #d9d9d9;
     --bg-alt-color: #cfcfcf;
-    --main-color: #C5B4E2;
+    --accent-color: #C5B4E2;
     --text-color: #3a3a3a;
     --sub-color: #7a7a7a;
 
@@ -67,7 +67,7 @@ body.theme-paper {
 body.theme-pastel {
     --bg-color: #c7a8b3;
     --bg-alt-color: #b896a3;
-    --main-color: #6b625a;
+    --accent-color: #6b625a;
     --text-color: #3f3440;
     --sub-color: #f2d6de;
 
@@ -80,7 +80,7 @@ body.theme-pastel {
 body.theme-quiet {
     --bg-color: #1f1c1a;
     --bg-alt-color: #141210;
-    --main-color: #6b625a;
+    --accent-color: #6b625a;
     --text-color: #f3ede6;
     --sub-color: #b8aea4;
 
@@ -93,7 +93,7 @@ body.theme-quiet {
 body.theme-sage {
     --bg-color: #f3f5ef;
     --bg-alt-color: #e8ece3;
-    --main-color: #6b625a;
+    --accent-color: #6b625a;
     --text-color: #2d332b;
     --sub-color: #667061;
 
