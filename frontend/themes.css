@@ -90,12 +90,12 @@ body.theme-quiet {
     --surface-text-color: var(--bg-color);
 }
 
-body.theme-sage {
-    --bg-color: #f3f5ef;
-    --bg-alt-color: #e8ece3;
-    --accent-color: #6b625a;
-    --text-color: #2d332b;
-    --sub-color: #667061;
+body.theme-ube {
+    --bg-color: #B3BAFF;
+    --bg-alt-color: #adb5fb;
+    --accent-color: #130F1A;
+    --text-color: #130F1A;
+    --sub-color: #130F1A;
 
     --surface-color: var(--bg-color);
     --surface-hover-color: var(--sub-color);
@@ -150,4 +150,11 @@ body.theme-sage {
     --swatch-accent-color: #F0E1C8;
     --swatch-text-color: #2d332b;
     --swatch-sub-color: #a7b5a0;
+}
+
+.theme-option[data-theme="ube"] {
+    --swatch-bg-color: #B3BAFF;
+    --swatch-accent-color: #130F1A;
+    --swatch-text-color: #130F1A;
+    --swatch-sub-color: #130F1A;
 }
