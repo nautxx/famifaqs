@@ -6,7 +6,7 @@
       "type": "age",
       "tags": ["oldest", "generation"],
       "active": true,
-      "priority": 3
+      "priority": 2
     },
     {
       "id": 2,
@@ -182,7 +182,7 @@
       "type": "location",
       "tags": ["california"],
       "active": true,
-      "priority": 3
+      "priority": 2
     },
     {
       "id": 111,
@@ -270,7 +270,7 @@
       "type": "generation",
       "tags": ["age-gap"],
       "active": true,
-      "priority": 3
+      "priority": 2
     },
     {
       "id": 122,
@@ -350,7 +350,7 @@
       "type": "generation",
       "tags": ["cousins"],
       "active": false,
-      "priority": 3
+      "priority": 2
     },
     {
       "id": 207,
@@ -414,7 +414,7 @@
       "type": "location",
       "tags": ["california"],
       "active": false,
-      "priority": 3
+      "priority": 2
     },
     {
       "id": 215,
@@ -470,7 +470,7 @@
       "type": "age",
       "tags": ["gap"],
       "active": true,
-      "priority": 3
+      "priority": 2
     },
     {
       "id": 222,
@@ -514,11 +514,19 @@
     },
     {
       "id": 301,
-      "text": "While visiting Victoria in college, Jason once spent over two hours drunk and lost in her apartment garage searching for Jon’s car — only to realize it had been parked outside the entire time.",
+      "text": "While visiting Victoria in college, Jason once spent over two hours drunk and lost in her apartment garage searching for Jon’s car — only to discover that it had been parked outside the entire time.",
       "type": "memory",
       "tags": ["story", "anecdote"],
       "active": true,
-      "priority": 3
+      "priority": 2
+    },
+    {
+      "id": 302,
+      "text": "Anthony once owned a Snake Eyes G.I. Joe action figure — ultra rare and arguably one of the coolest in the lineup.",
+      "type": "memory",
+      "tags": ["story", "anecdote"],
+      "active": true,
+      "priority": 2
     },
     {
       "id": 500,
@@ -539,12 +547,21 @@
       "priority": 3
     },
     {
+      "id": 502,
+      "template": "It has been {years} since Victoria and Jon got married.",
+      "type": "timeline",
+      "eventDate": "2019-06-09",
+      "tags": ["wedding", "countup"],
+      "active": true,
+      "priority": 3
+    },
+    {
       "id": 600,
       "text": "Jason’s favorite Filipino dish is sinigang—preferably loaded with extra tamarind and turned up extra spicy. He’s also a big fan of sisig for that chopped crispy pork explosion with a citrusy bite and an addictive fat-crunch balance.",
       "type": "favorite",
       "tags": ["food", "favorite"],
       "active": true,
-      "priority": 3
+      "priority": 2
     },
     {
       "id": 601,
@@ -552,11 +569,35 @@
       "type": "favorite",
       "tags": ["food", "favorite"],
       "active": true,
-      "priority": 3
+      "priority": 2
     },
     {
       "id": 602,
-      "text": "Krystle’s favorite Filipino dish is ampalaya, the bitter the better.",
+      "text": "Krystle’s favorite Filipino dishes are pork rib sinigang and tortang talong.",
+      "type": "favorite",
+      "tags": ["food", "favorite"],
+      "active": true,
+      "priority": 2
+    },
+    {
+      "id": 603,
+      "text": "Jordan’s favorite Filipino dish is ampalaya, the bitter the better.",
+      "type": "favorite",
+      "tags": ["food", "favorite"],
+      "active": true,
+      "priority": 2
+    },
+    {
+      "id": 604,
+      "text": "Tricia’s favorite Filipino dish is balut—no hesitation.",
+      "type": "favorite",
+      "tags": ["food", "favorite"],
+      "active": true,
+      "priority": 2
+    },
+    {
+      "id": 605,
+      "text": "Leo loves taho.",
       "type": "favorite",
       "tags": ["food", "favorite"],
       "active": true,
