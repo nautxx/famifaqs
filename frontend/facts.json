@@ -121,6 +121,14 @@
       "priority": 3
     },
     {
+      "id": 16,
+      "text": "There is a 19 to 9 ratio of male to female in the grandchildren generation.",
+      "type": "stat",
+      "tags": ["gender", "generation", "grandchildren"],
+      "active": true,
+      "priority": 2
+    },
+    {
       "id": 101,
       "text": "Arthur, Bernardo Sr., and Leopoldo were all born within just a few years of each other in the late 1940s.",
       "type": "generation",
@@ -150,14 +158,6 @@
       "type": "generation",
       "tags": ["multi-generation"],
       "active": true,
-      "priority": 2
-    },
-    {
-      "id": 106,
-      "text": "Some family members share both first names and middle names across different generations.",
-      "type": "name",
-      "tags": ["names", "repetition"],
-      "active": false,
       "priority": 2
     },
     {
