@@ -606,8 +606,8 @@
     {
       "id": 1000,
       "text": "Oliver and his uncle Michael are currently in a height battle — it’s a close one.",
-      "type": "memory",
-      "tags": ["family", "fun"],
+      "type": "family",
+      "tags": ["comparison", "height"],
       "active": true,
       "priority": 3
     }
