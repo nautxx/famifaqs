@@ -133,8 +133,19 @@ const Carousel = {
       const themeButton = event.target.closest("[data-theme]");
       const modalPanel = event.target.closest(".theme-modal-panel");
       const githubLink = event.target.closest(".bottom-bar a");
+      const noticeToggle = event.target.closest("#notice-toggle");
 
       if (githubLink) {
+        return;
+      }
+
+      if (noticeToggle) {
+        this.openDrawer();
+        return;
+      }
+
+      if (event.target.closest(".drawer-overlay")) {
+        this.closeDrawer();
         return;
       }
 
@@ -196,6 +207,27 @@ const Carousel = {
       console.error("Failed to load facts:", error);
       this.renderMessage(this.config.messages.error);
     }
+  },
+
+  openDrawer() {
+    const drawer = document.getElementById("notices-drawer");
+    if (!drawer) return;
+
+    drawer.hidden = false;
+    requestAnimationFrame(() => {
+      drawer.classList.add("is-open");
+    });
+  },
+
+  closeDrawer() {
+    const drawer = document.getElementById("notices-drawer");
+    if (!drawer) return;
+
+    drawer.classList.remove("is-open");
+
+    setTimeout(() => {
+      drawer.hidden = true;
+    }, 250);
   },
 
   /**
