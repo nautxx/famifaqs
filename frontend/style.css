@@ -235,7 +235,7 @@ h1 {
 }
 
 .swatch i:nth-child(1) {
-    background: var(--swatch-main);
+    background: var(--swatch-accent);
 }
 
 .swatch i:nth-child(2) {
