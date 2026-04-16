@@ -112,7 +112,7 @@ h1 {
 .bottom-bar a:hover {
     opacity: 0.9;
     color: var(--sub-color);
-    transform: translateY(-1px);
+    /* transform: translateY(-1px); */
 }
 
 .bottom-bar button:focus-visible,
