@@ -1,4 +1,4 @@
-name: famifaqs
+name: feedloop
 
 services:
   web:
