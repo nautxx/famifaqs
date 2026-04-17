@@ -197,7 +197,7 @@ const Carousel = {
       }
 
       const data = await response.json();
-      this.state.facts = this.normalizeFacts(data.facts);
+      this.state.facts = this.normalizeFacts(data.items);
 
       if (!this.state.facts.length) {
         this.renderMessage(this.config.messages.empty);
