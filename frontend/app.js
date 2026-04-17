@@ -1,6 +1,6 @@
 /**
- * A single fact item
- * @typedef {Object} Fact
+ * A single item item
+ * @typedef {Object} Item
  * @property {string} id
  * @property {string} text
  * @property {string} [type]
@@ -12,11 +12,11 @@
 /**
  * App configuration
  * @typedef {Object} Config
- * @property {string} factsUrl
+ * @property {string} itemsUrl
  * @property {string} notificationsUrl
  * @property {number} fadeDurationMs
  * @property {number} basePauseMs
- * @property {number} recentFactsLimit
+ * @property {number} recentItemsLimit
  * @property {number} maxSameTypeInRow
  * @property {{ cache: string }} fetchOptions
  * @property {{ empty: string, error: string }} messages
@@ -25,10 +25,10 @@
 /**
  * Runtime state
  * @typedef {Object} State
- * @property {Fact[]} facts
- * @property {string[]} recentFactIds
+ * @property {Item[]} items
+ * @property {string[]} recentItemIds
  * @property {string[]} recentTypes
- * @property {string|null} lastFactId
+ * @property {string|null} lastItemId
  * @property {number|null} rotationTimer
  */
 
@@ -37,56 +37,49 @@
  * @typedef {"calm" | "lavender" | "quiet" | "sage" | "ocean" | "sunset" | "ink"} Theme
  */
 
-/** @type {{ config: Config, state: State }} */
 const Carousel = {
-  // Core configuration for timing, data source, and messages
   config: {
-    factsUrl: "/feed.json",
+    itemsUrl: "/feed.json",
     notificationsUrl: "/notifications.json",
     fadeDurationMs: 2000,
     basePauseMs: 600,
-    recentFactsLimit: 5,
+    recentItemsLimit: 5,
     maxSameTypeInRow: 2,
     fetchOptions: { cache: "no-store" },
     messages: {
-      empty: "No facts available.",
-      error: "Could not load facts.",
+      empty: "No items available.",
+      error: "Could not load items.",
     },
   },
 
-  // Runtime state
   state: {
-    facts: [],
-    recentFactIds: [],
+    items: [],
+    recentItemIds: [],
     recentTypes: [],
-    lastFactId: null,
+    lastItemId: null,
     rotationTimer: null,
   },
 
-  // Cached DOM elements
   elements: {
-    fact: null,
+    item: null,
     themeToggle: null,
     themeModal: null,
   },
 
-  // Initialize app
   init() {
     this.cacheElements();
     this.applySavedTheme();
     this.bindEvents();
-    this.loadFacts();
+    this.loadItems();
     this.loadNotifications();
   },
 
-  // Cache DOM references
   cacheElements() {
-    this.elements.fact = document.getElementById("fact");
+    this.elements.item = document.getElementById("fact"); // unchanged
     this.elements.themeToggle = document.getElementById("theme-toggle");
     this.elements.themeModal = document.getElementById("theme-modal");
   },
 
-  // Apply saved theme on load
   applySavedTheme() {
     const savedTheme = localStorage.getItem("Carousel-theme") || "calm";
     this.setTheme(savedTheme);
@@ -101,10 +94,7 @@ const Carousel = {
 
     const rect = toggle.getBoundingClientRect();
 
-    // position horizontally centered on button
     panel.style.left = `${rect.left + rect.width / 2}px`;
-
-    // position above button (with spacing)
     panel.style.top = `${rect.top - 12}px`;
 
     modal.hidden = false;
@@ -129,7 +119,6 @@ const Carousel = {
     }, 150);
   },
 
-  // Bind user interactions
   bindEvents() {
     document.body.addEventListener("click", (event) => {
       const themeToggle = event.target.closest("#theme-toggle");
@@ -138,29 +127,16 @@ const Carousel = {
       const githubLink = event.target.closest(".bottom-bar a");
       const noticeToggle = event.target.closest("#notice-toggle");
 
-      if (githubLink) {
-        return;
-      }
+      if (githubLink) return;
 
-      if (noticeToggle) {
-        this.openDrawer();
-        return;
-      }
+      if (noticeToggle) return this.openDrawer();
+      if (event.target.closest(".drawer-overlay")) return this.closeDrawer();
 
-      if (event.target.closest(".drawer-overlay")) {
-        this.closeDrawer();
-        return;
-      }
-
-      if (themeToggle) {
-        this.openThemeModal();
-        return;
-      }
+      if (themeToggle) return this.openThemeModal();
 
       if (themeButton) {
         this.setTheme(themeButton.dataset.theme);
-        this.closeThemeModal();
-        return;
+        return this.closeThemeModal();
       }
 
       if (
@@ -168,12 +144,12 @@ const Carousel = {
         !this.elements.themeModal.hidden &&
         !modalPanel
       ) {
-        this.closeThemeModal();
-        return;
+        return this.closeThemeModal();
       }
 
-      if (!this.state.facts.length) return;
-      this.showNextFact();
+      if (!this.state.items.length) return;
+
+      this.showNextItem();
       this.resetRotationTimer();
     });
 
@@ -184,351 +160,159 @@ const Carousel = {
     });
   },
 
-  // Fetch and initialize facts
-  async loadFacts() {
+  async loadItems() {
     try {
-      const response = await fetch(
-        this.config.factsUrl,
-        this.config.fetchOptions,
-      );
+      const response = await fetch(this.config.itemsUrl);
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
+      if (!response.ok) throw new Error();
 
       const data = await response.json();
-      this.state.facts = this.normalizeFacts(data.items);
+      this.state.items = this.normalizeItems(data.items);
 
-      if (!this.state.facts.length) {
+      if (!this.state.items.length) {
         this.renderMessage(this.config.messages.empty);
         return;
       }
 
-      this.renderInitialFact();
-      this.scheduleNextFact();
-    } catch (error) {
-      console.error("Failed to load facts:", error);
+      this.renderInitialItem();
+      this.scheduleNextItem();
+    } catch {
       this.renderMessage(this.config.messages.error);
     }
   },
 
-  openDrawer() {
-    const drawer = document.getElementById("notices-drawer");
-    if (!drawer) return;
-
-    drawer.hidden = false;
-    requestAnimationFrame(() => {
-      drawer.classList.add("is-open");
-    });
+  normalizeItems(items) {
+    return (items || [])
+      .filter((item) => item && item.active !== false)
+      .map((item) => ({ ...item }))
+      .filter((item) => typeof item.text === "string" && item.text.trim());
   },
 
-  closeDrawer() {
-    const drawer = document.getElementById("notices-drawer");
-    if (!drawer) return;
-
-    drawer.classList.remove("is-open");
-
-    setTimeout(() => {
-      drawer.hidden = true;
-    }, 250);
+  getItemWeight(item) {
+    return item.priority || 1;
   },
 
-  /**
-   * Return full years since a given date.
-   * @param {string} dateString
-   * @returns {number}
-   */
-  getFullYearsSince(dateString) {
-    const today = new Date();
-    const date = new Date(dateString);
-
-    if (Number.isNaN(date.getTime())) return 0;
-
-    let years = today.getFullYear() - date.getFullYear();
-
-    const hasNotReachedAnniversary =
-      today.getMonth() < date.getMonth() ||
-      (today.getMonth() === date.getMonth() &&
-        today.getDate() < date.getDate());
-
-    if (hasNotReachedAnniversary) {
-      years -= 1;
-    }
-
-    return Math.max(0, years);
-  },
-
-  /**
-   * Format singular/plural count.
-   * @param {number} value
-   * @param {string} singular
-   * @param {string} plural
-   * @returns {string}
-   */
-  formatCount(value, singular, plural) {
-    return `${value} ${value === 1 ? singular : plural}`;
-  },
-
-  /**
-   * Expand dynamic template values.
-   * Supported placeholder:
-   * - {years}
-   *
-   * @param {string} template
-   * @param {Fact} fact
-   * @returns {string}
-   */
-  renderFactTemplate(template, fact) {
-    let text = template;
-
-    if (text.includes("{years}") && fact.eventDate) {
-      const years = this.getFullYearsSince(fact.eventDate);
-      text = text.replaceAll(
-        "{years}",
-        this.formatCount(years, "year", "years"),
-      );
-    }
-
-    return text;
-  },
-
-  /**
-   * Validate, clean, and expand incoming facts.
-   * @param {Fact[]} facts
-   * @returns {Fact[]}
-   */
-  normalizeFacts(facts) {
-    return (facts || [])
-      .filter((fact) => fact && fact.active !== false)
-      .map((fact) => {
-        const normalizedFact = { ...fact };
-
-        if (
-          typeof normalizedFact.template === "string" &&
-          normalizedFact.template.trim()
-        ) {
-          normalizedFact.text = this.renderFactTemplate(
-            normalizedFact.template,
-            normalizedFact,
-          );
-        }
-
-        return normalizedFact;
-      })
-      .filter((fact) => {
-        return typeof fact.text === "string" && fact.text.trim();
-      });
-  },
-
-  // Return a weight for each fact based on priority
-  getFactWeight(fact) {
-    return fact.priority || 1;
-  },
-
-  /**
-   * Set the active theme and persist it to localStorage.
-   * @param {Theme} themeName
-   */
-  setTheme(themeName) {
-    const themeClasses = Array.from(document.body.classList).filter(
-      (className) => className.startsWith("theme-"),
+  getWeightedRandomItem(items) {
+    const totalWeight = items.reduce(
+      (sum, item) => sum + this.getItemWeight(item),
+      0,
     );
-
-    document.body.classList.remove(...themeClasses);
-    document.body.classList.add(`theme-${themeName}`);
-    localStorage.setItem("Carousel-theme", themeName);
-
-    document.querySelectorAll("[data-theme]").forEach((button) => {
-      button.classList.toggle("is-active", button.dataset.theme === themeName);
-    });
-
-    if (this.elements.themeToggle) {
-      const label = this.elements.themeToggle.querySelector(".theme-label");
-      if (label) {
-        label.textContent = themeName;
-      }
-    }
-  },
-
-  /**
-   * Select a fact using weighted randomness based on priority.
-   * @param {Fact[]} facts
-   * @returns {Fact|null}
-   */
-  getWeightedRandomFact(facts) {
-    const totalWeight = facts.reduce((sum, fact) => {
-      return sum + this.getFactWeight(fact);
-    }, 0);
-
     let random = Math.random() * totalWeight;
 
-    for (const fact of facts) {
-      random -= this.getFactWeight(fact);
-
-      if (random <= 0) {
-        return fact;
-      }
+    for (const item of items) {
+      random -= this.getItemWeight(item);
+      if (random <= 0) return item;
     }
 
-    return facts[facts.length - 1] || null;
+    return items[items.length - 1] || null;
   },
 
-  /**
-   * Store recently shown fact IDs to avoid repetition.
-   * @param {string} factId
-   */
-  rememberFact(factId) {
-    this.state.recentFactIds.push(factId);
-
-    if (this.state.recentFactIds.length > this.config.recentFactsLimit) {
-      this.state.recentFactIds.shift();
+  rememberItem(itemId) {
+    this.state.recentItemIds.push(itemId);
+    if (this.state.recentItemIds.length > this.config.recentItemsLimit) {
+      this.state.recentItemIds.shift();
     }
   },
 
-  /**
-   * Track recently shown fact types to prevent repetition streaks.
-   * @param {string} type
-   */
   rememberType(type) {
     this.state.recentTypes.push(type);
-
     if (this.state.recentTypes.length > this.config.maxSameTypeInRow) {
       this.state.recentTypes.shift();
     }
   },
 
-  /**
-   * Check if a fact type has been shown too many times consecutively.
-   * @param {string} type
-   * @returns {boolean}
-   */
   isTypeOverused(type) {
-    if (this.state.recentTypes.length < this.config.maxSameTypeInRow) {
+    if (this.state.recentTypes.length < this.config.maxSameTypeInRow)
       return false;
-    }
-
-    return this.state.recentTypes.every((recentType) => recentType === type);
+    return this.state.recentTypes.every((t) => t === type);
   },
 
-  /**
-   * Determine the next fact while avoiding recent duplicates
-   * and excessive repetition of the same type.
-   * @returns {Fact|null}
-   */
-  getNextFact() {
-    if (!this.state.facts.length) return null;
+  getNextItem() {
+    if (!this.state.items.length) return null;
 
-    let eligibleFacts = this.state.facts.filter((fact) => {
-      return (
-        !this.state.recentFactIds.includes(fact.id) &&
-        !this.isTypeOverused(fact.type)
+    let eligibleItems = this.state.items.filter(
+      (item) =>
+        !this.state.recentItemIds.includes(item.id) &&
+        !this.isTypeOverused(item.type),
+    );
+
+    if (!eligibleItems.length) {
+      eligibleItems = this.state.items.filter(
+        (item) => !this.state.recentItemIds.includes(item.id),
       );
-    });
-
-    // If type balancing is too restrictive, ignore type but keep no-repeat window
-    if (!eligibleFacts.length) {
-      eligibleFacts = this.state.facts.filter((fact) => {
-        return !this.state.recentFactIds.includes(fact.id);
-      });
     }
 
-    // If the no-repeat window is too restrictive, avoid only the last fact
-    if (!eligibleFacts.length) {
-      eligibleFacts = this.state.facts.filter((fact) => {
-        return fact.id !== this.state.lastFactId;
-      });
+    if (!eligibleItems.length) {
+      eligibleItems = this.state.items.filter(
+        (item) => item.id !== this.state.lastItemId,
+      );
     }
 
-    // Final fallback if only one fact exists
-    if (!eligibleFacts.length) {
-      eligibleFacts = [...this.state.facts];
+    if (!eligibleItems.length) {
+      eligibleItems = [...this.state.items];
     }
 
-    return this.getWeightedRandomFact(eligibleFacts);
+    return this.getWeightedRandomItem(eligibleItems);
   },
 
-  // Render first fact immediately
-  renderInitialFact() {
-    const fact = this.getNextFact();
-    if (!fact) return;
+  renderInitialItem() {
+    const item = this.getNextItem();
+    if (!item) return;
 
-    this.elements.fact.textContent = fact.text;
-    this.elements.fact.style.opacity = "1";
-    this.state.lastFactId = fact.id;
-    this.rememberFact(fact.id);
-    this.rememberType(fact.type);
+    this.elements.item.textContent = item.text;
+    this.elements.item.style.opacity = "1";
+
+    this.state.lastItemId = item.id;
+    this.rememberItem(item.id);
+    this.rememberType(item.type);
   },
 
-  /**
-   * Render a fallback message when no facts are available or on error.
-   * @param {string} message
-   */
   renderMessage(message) {
-    this.elements.fact.textContent = message;
-    this.elements.fact.style.opacity = "1";
+    this.elements.item.textContent = message;
+    this.elements.item.style.opacity = "1";
   },
 
-  // Transition with equal fade + blur
-  showNextFact() {
-    const fact = this.getNextFact();
-    if (!fact || !this.elements.fact) return;
+  showNextItem() {
+    const item = this.getNextItem();
+    if (!item || !this.elements.item) return;
 
-    const { fact: factEl } = this.elements;
+    const el = this.elements.item;
     const duration = this.config.fadeDurationMs;
 
-    // Fade out + blur (same speed)
-    factEl.style.transition = `
-    opacity ${duration}ms ease,
-    filter ${duration}ms ease
-  `;
-    factEl.style.opacity = "0";
-    factEl.style.filter = "blur(1px)";
+    el.style.transition = `opacity ${duration}ms ease, filter ${duration}ms ease`;
+    el.style.opacity = "0";
+    el.style.filter = "blur(1px)";
 
-    window.setTimeout(() => {
-      factEl.textContent = fact.text || "";
+    setTimeout(() => {
+      el.textContent = item.text;
 
-      // Fade in + unblur (same speed)
-      factEl.style.transition = `
-      opacity ${duration}ms cubic-bezier(0.4, 0, 0.2, 1),
-      filter ${duration}ms cubic-bezier(0.4, 0, 0.2, 1)
-    `;
-      factEl.style.opacity = "1";
-      factEl.style.filter = "blur(0px)";
+      el.style.transition = `opacity ${duration}ms ease, filter ${duration}ms ease`;
+      el.style.opacity = "1";
+      el.style.filter = "blur(0px)";
 
-      this.state.lastFactId = fact.id;
-      this.rememberFact(fact.id);
-      this.rememberType(fact.type);
+      this.state.lastItemId = item.id;
+      this.rememberItem(item.id);
+      this.rememberType(item.type);
     }, duration);
   },
 
-  // Schedule next fact based on smart timing
-  scheduleNextFact() {
-    const currentText = this.elements.fact.textContent || "";
+  scheduleNextItem() {
+    const currentText = this.elements.item.textContent || "";
     const delay = this.getDisplayTime(currentText) + this.config.basePauseMs;
 
-    this.state.rotationTimer = window.setTimeout(() => {
-      this.showNextFact();
-      this.scheduleNextFact();
+    this.state.rotationTimer = setTimeout(() => {
+      this.showNextItem();
+      this.scheduleNextItem();
     }, delay);
   },
 
-  // Reset rotation timer after manual interaction
   resetRotationTimer() {
     if (this.state.rotationTimer) {
-      window.clearTimeout(this.state.rotationTimer);
+      clearTimeout(this.state.rotationTimer);
     }
-
-    this.scheduleNextFact();
+    this.scheduleNextItem();
   },
 
-  /**
-   * Calculate how long a fact should be displayed based on:
-   * - word count (reading speed)
-   * - punctuation pauses
-   * - minimum/maximum bounds
-   * @param {string} text
-   * @returns {number}
-   */
   getDisplayTime(text) {
     const words = text.trim().split(/\s+/).length;
     const punctuation = (text.match(/[.,;:!?—-]/g) || []).length;
@@ -539,48 +323,22 @@ const Carousel = {
 
     return Math.min(Math.max(time, 7000), 14000);
   },
+
   async loadNotifications() {
     try {
-      const response = await fetch(
-        this.config.notificationsUrl,
-        this.config.fetchOptions,
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
-      const notifications = this.normalizeNotifications(
-        data.notifications || [],
-      );
-      this.renderNotifications(notifications);
-    } catch (error) {
-      console.error("Failed to load notifications:", error);
+      const res = await fetch(this.config.notificationsUrl);
+      const data = await res.json();
+      this.renderNotifications(data.notifications || []);
+    } catch {
       this.renderNotifications([]);
     }
   },
 
-  normalizeNotifications(notifications) {
-    return (notifications || []).filter((item) => {
-      return (
-        item &&
-        item.active !== false &&
-        typeof item.text === "string" &&
-        item.text.trim()
-      );
-    });
-  },
   renderNotifications(notifications) {
     const container = document.querySelector("#notifications-content");
     if (!container) return;
 
     container.innerHTML = "";
-
-    if (!notifications.length) {
-      container.innerHTML = `<p class="drawer-empty">Nothing to show</p>`;
-      return;
-    }
 
     notifications.forEach((item) => {
       const row = document.createElement("div");
@@ -601,9 +359,30 @@ const Carousel = {
       container.appendChild(row);
     });
   },
+
+  setTheme(theme) {
+    const themeClasses = Array.from(document.body.classList).filter((c) =>
+      c.startsWith("theme-"),
+    );
+
+    document.body.classList.remove(...themeClasses);
+    document.body.classList.add(`theme-${theme}`);
+    localStorage.setItem("Carousel-theme", theme);
+  },
+
+  openDrawer() {
+    const d = document.getElementById("notices-drawer");
+    d.hidden = false;
+    requestAnimationFrame(() => d.classList.add("is-open"));
+  },
+
+  closeDrawer() {
+    const d = document.getElementById("notices-drawer");
+    d.classList.remove("is-open");
+    setTimeout(() => (d.hidden = true), 250);
+  },
 };
 
-// Initialize when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
   Carousel.init();
 });
