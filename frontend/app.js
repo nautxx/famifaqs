@@ -41,7 +41,7 @@
 const Carousel = {
   // Core configuration for timing, data source, and messages
   config: {
-    factsUrl: "/facts.json",
+    itemsUrl: "/feed.json",
     notificationsUrl: "/notifications.json",
     fadeDurationMs: 2000,
     basePauseMs: 600,
