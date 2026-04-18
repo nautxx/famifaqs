@@ -63,11 +63,6 @@ const Carousel = {
       empty: "No content available.",
       error: "Could not load content.",
     },
-    speedMultiplier: 1,
-    touch: {
-      startX: 0,
-      endX: 0,
-    },
   },
 
   state: {
@@ -76,6 +71,13 @@ const Carousel = {
     recentTypes: [],
     lastItemId: null,
     rotationTimer: null,
+    history: [],
+    historyIndex: -1,
+    speedMultiplier: 1,
+    touch: {
+      startX: 0,
+      endX: 0,
+    },
   },
 
   elements: {
@@ -244,14 +246,26 @@ const Carousel = {
           this.closeDrawer();
         }
       }
+
+      if (event.key === "ArrowLeft") {
+        this.goToPreviousItem();
+        this.resetRotationTimer();
+        return;
+      }
+
+      if (event.key === "ArrowRight") {
+        this.goToNextFromHistory();
+        this.resetRotationTimer();
+        return;
+      }
     });
 
     document.addEventListener("touchstart", (e) => {
-      this.touch.startX = e.touches[0].clientX;
+      this.state.touch.startX = e.touches[0].clientX;
     });
 
     document.addEventListener("touchend", (e) => {
-      this.touch.endX = e.changedTouches[0].clientX;
+      this.state.touch.endX = e.changedTouches[0].clientX;
       this.handleSwipe();
     });
   },
@@ -360,6 +374,9 @@ const Carousel = {
     this.state.lastItemId = item.id;
     this.rememberItem(item.id);
     this.rememberType(item.type);
+
+    this.state.history = [item];
+    this.state.historyIndex = 0;
   },
 
   renderMessage(message) {
@@ -370,6 +387,13 @@ const Carousel = {
   showNextItem() {
     const item = this.getNextItem();
     if (!item || !this.elements.item) return;
+
+    this.state.history = this.state.history.slice(
+      0,
+      this.state.historyIndex + 1,
+    );
+    this.state.history.push(item);
+    this.state.historyIndex++;
 
     const el = this.elements.item;
     const duration = this.config.fadeDurationMs;
@@ -389,6 +413,36 @@ const Carousel = {
       this.rememberItem(item.id);
       this.rememberType(item.type);
     }, duration);
+  },
+
+  goToPreviousItem() {
+    if (this.state.historyIndex <= 0) return;
+
+    this.state.historyIndex--;
+    const item = this.state.history[this.state.historyIndex];
+
+    this.renderItemDirect(item);
+  },
+
+  goToNextFromHistory() {
+    if (this.state.historyIndex < this.state.history.length - 1) {
+      this.state.historyIndex++;
+      const item = this.state.history[this.state.historyIndex];
+      this.renderItemDirect(item);
+      return;
+    }
+
+    this.showNextItem();
+  },
+
+  renderItemDirect(item) {
+    const el = this.elements.item;
+    if (!el) return;
+
+    el.textContent = item.text;
+    el.style.opacity = "1";
+    el.style.filter = "blur(0px)";
+    this.state.lastItemId = item.id;
   },
 
   scheduleNextItem() {
@@ -498,13 +552,17 @@ const Carousel = {
   },
 
   handleSwipe() {
-    const threshold = 50; // minimum swipe distance
-    const diff = this.touch.endX - this.touch.startX;
+    const threshold = 50;
+    const diff = this.state.touch.endX - this.state.touch.startX;
 
     if (Math.abs(diff) < threshold) return;
 
-    // swipe left OR right → next item
-    this.showNextItem();
+    if (diff > 0) {
+      this.goToPreviousItem();
+    } else {
+      this.goToNextFromHistory();
+    }
+
     this.resetRotationTimer();
   },
 };
