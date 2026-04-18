@@ -114,11 +114,11 @@ const Carousel = {
 
   setSpeed(speed) {
     const map = {
-      slow: 1.25,
+      slow: 1.5,
 
       normal: 1,
 
-      fast: 0.75,
+      fast: 0.5,
     };
 
     this.state.speedMultiplier = map[speed] || 1;
