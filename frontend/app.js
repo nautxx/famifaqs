@@ -203,9 +203,46 @@ const Carousel = {
     });
 
     document.addEventListener("keydown", (event) => {
+      const tag = document.activeElement?.tagName;
+      const isTyping =
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        document.activeElement?.isContentEditable;
+
+      if (isTyping) return;
+
       if (event.key === "Escape") {
         this.closeThemeModal();
         this.closeDrawer();
+        return;
+      }
+
+      if (event.key === " " || event.code === "Space") {
+        event.preventDefault();
+        if (!this.state.items.length) return;
+        this.showNextItem();
+        this.resetRotationTimer();
+        return;
+      }
+
+      if (event.key.toLowerCase() === "t") {
+        if (this.elements.themeModal && !this.elements.themeModal.hidden) {
+          this.closeThemeModal();
+        } else {
+          this.openThemeModal();
+        }
+      }
+
+      if (event.key.toLowerCase() === "n") {
+        const drawer = document.getElementById("notices-drawer");
+
+        if (!drawer) return;
+
+        if (drawer.hidden) {
+          this.openDrawer();
+        } else {
+          this.closeDrawer();
+        }
       }
     });
 
