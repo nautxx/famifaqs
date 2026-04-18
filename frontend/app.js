@@ -64,6 +64,10 @@ const Carousel = {
       error: "Could not load content.",
     },
     speedMultiplier: 1,
+    touch: {
+      startX: 0,
+      endX: 0,
+    },
   },
 
   state: {
@@ -203,6 +207,15 @@ const Carousel = {
         this.closeThemeModal();
         this.closeDrawer();
       }
+    });
+
+    document.addEventListener("touchstart", (e) => {
+      this.touch.startX = e.touches[0].clientX;
+    });
+
+    document.addEventListener("touchend", (e) => {
+      this.touch.endX = e.changedTouches[0].clientX;
+      this.handleSwipe();
     });
   },
 
@@ -445,6 +458,17 @@ const Carousel = {
     const d = document.getElementById("notices-drawer");
     d.classList.remove("is-open");
     setTimeout(() => (d.hidden = true), 250);
+  },
+
+  handleSwipe() {
+    const threshold = 50; // minimum swipe distance
+    const diff = this.touch.endX - this.touch.startX;
+
+    if (Math.abs(diff) < threshold) return;
+
+    // swipe left OR right → next item
+    this.showNextItem();
+    this.resetRotationTimer();
   },
 };
 
