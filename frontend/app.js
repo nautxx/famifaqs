@@ -63,6 +63,7 @@ const Carousel = {
       empty: "No content available.",
       error: "Could not load content.",
     },
+    speedMultiplier: 1,
   },
 
   state: {
@@ -82,6 +83,7 @@ const Carousel = {
   init() {
     this.cacheElements();
     this.applySavedTheme();
+    this.applySavedSpeed();
     this.bindEvents();
     this.loadItems();
     this.loadNotifications();
@@ -96,6 +98,30 @@ const Carousel = {
   applySavedTheme() {
     const savedTheme = localStorage.getItem("Carousel-theme") || "calm";
     this.setTheme(savedTheme);
+  },
+
+  applySavedSpeed() {
+    const saved = localStorage.getItem("Carousel-speed") || "normal";
+
+    this.setSpeed(saved);
+  },
+
+  setSpeed(speed) {
+    const map = {
+      slow: 1.25,
+
+      normal: 1,
+
+      fast: 0.8,
+    };
+
+    this.state.speedMultiplier = map[speed] || 1;
+
+    localStorage.setItem("Carousel-speed", speed);
+
+    document.querySelectorAll("[data-speed]").forEach((btn) => {
+      btn.classList.toggle("is-active", btn.dataset.speed === speed);
+    });
   },
 
   openThemeModal() {
@@ -134,11 +160,17 @@ const Carousel = {
 
   bindEvents() {
     document.body.addEventListener("click", (event) => {
+      const speedButton = event.target.closest("[data-speed]");
       const themeToggle = event.target.closest("#theme-toggle");
       const themeButton = event.target.closest("[data-theme]");
       const modalPanel = event.target.closest(".theme-modal-panel");
       const githubLink = event.target.closest(".bottom-bar a");
       const noticeToggle = event.target.closest("#notice-toggle");
+
+      if (speedButton) {
+        this.setSpeed(speedButton.dataset.speed);
+        return;
+      }
 
       if (githubLink) return;
 
@@ -311,7 +343,9 @@ const Carousel = {
 
   scheduleNextItem() {
     const currentText = this.elements.item.textContent || "";
-    const delay = this.getDisplayTime(currentText) + this.config.basePauseMs;
+    const delay =
+      (this.getDisplayTime(currentText) + this.config.basePauseMs) *
+      this.state.speedMultiplier;
 
     this.state.rotationTimer = setTimeout(() => {
       this.showNextItem();
