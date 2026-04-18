@@ -96,7 +96,7 @@ h1 {
     font: inherit;
     color: var(--text-color);
     opacity: 0.7;
-    transition: opacity 0.18s ease, color 0.18s ease;
+    transition: opacity 0.1s ease, color 0.1s ease;
 }
 
 .top-nav button:hover {
@@ -115,7 +115,7 @@ h1 {
     inset: 0;
     background: rgba(0, 0, 0, 0.25);
     opacity: 0;
-    transition: opacity 0.18s ease;
+    transition: opacity 0.1s ease;
 }
 
 .drawer-panel {
@@ -130,7 +130,7 @@ h1 {
     color: var(--surface-text-color);
     border-left: 3px solid rgba(0, 0, 0, 0.50);
     transform: translateX(100%);
-    transition: transform 0.18s ease;
+    transition: transform 0.1s ease;
     display: flex;
     flex-direction: column;
 }
@@ -239,7 +239,7 @@ h1 {
     font: inherit;
     font-size: 0.8rem;
     font-weight: 500;
-    letter-spacing: -0.01em;
+    letter-spacing: 0em;
     line-height: 1;
     color: var(--text-color);
     opacity: 0.8;
@@ -305,9 +305,9 @@ h1 {
     opacity: 0.55;
     cursor: pointer;
     transition:
-        opacity 0.18s ease,
-        color 0.18s ease,
-        transform 0.18s ease;
+        opacity 0.1s ease,
+        color 0.1s ease,
+        transform 0.1s ease;
 }
 
 .bottom-bar button:hover,
@@ -401,9 +401,9 @@ h1 {
     color: var(--sub-color);
     opacity: 0.65;
     transition:
-        opacity 0.18s ease,
-        color 0.18s ease,
-        background 0.18s ease,
+        opacity 0.1s ease,
+        color 0.1s ease,
+        background 0.1s ease,
 }
 
 .theme-option:hover {
@@ -458,16 +458,16 @@ body {
 .bottom-bar,
 .theme-option {
     transition:
-        color 0.18s ease,
-        background 0.18s ease,
-        opacity 0.18s ease;
+        color 0.1s ease,
+        background 0.1s ease,
+        opacity 0.1s ease;
 }
 
 .theme-modal-panel {
     transition:
-        opacity 0.18s ease,
-        transform 0.18s ease,
-        background 0.4s ease;
+        opacity 0.1s ease,
+        transform 0.1s ease,
+        background 0.1s ease;
 }
 
 .notification-row {
