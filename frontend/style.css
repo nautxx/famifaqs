@@ -1,6 +1,9 @@
 body {
     background: var(--bg-color);
     text-align: center;
+    transition:
+        background 0.1s ease,
+        color 0.1s ease;
 }
 
 ::selection,
@@ -20,8 +23,7 @@ body {
 }
 
 .content {
-    margin-top: auto;
-    margin-bottom: auto;
+    margin-block: auto;
 }
 
 h1 {
@@ -98,13 +100,13 @@ h1 {
     font-family: var(--font-sans);
     font-size: 0.85rem;
     font-weight: 500;
-    letter-spacing: 0em;
+    /* letter-spacing: 0em; */
 }
 
 .control-group {
     display: inline-flex;
     align-items: center;
-    gap: 0;
+    /* gap: 0; */
     padding: 0.22rem;
     border-radius: 0.6rem;
     background: var(--bg-alt-color);
@@ -141,9 +143,9 @@ h1 {
     opacity: 1;
 }
 
-.control-option+.control-option {
+/* .control-option+.control-option {
     position: relative;
-}
+} */
 
 .control-option:focus-visible {
     outline: none;
@@ -315,7 +317,7 @@ h1 {
     opacity: 0.6;
     flex-shrink: 0;
     margin-top: 4px;
-    height: 100%;
+    /* height: 100%; */
 }
 
 #notifications-content {
@@ -368,6 +370,7 @@ h1 {
     inset: 0;
     pointer-events: none;
     z-index: 2000;
+    font-family: var(--font-sans);
 }
 
 .theme-modal[hidden] {
@@ -406,7 +409,7 @@ h1 {
     width: 100%;
     padding: 14px 10px;
     margin: 0;
-    border-radius: 0px;
+    border-radius: 0;
     font: inherit;
     font-size: 0.85rem;
     font-weight: 500;
@@ -458,12 +461,6 @@ h1 {
 
 .swatch i:nth-child(3) {
     background: var(--swatch-sub-color);
-}
-
-body {
-    transition:
-        background 0.65s ease,
-        color 0.4s ease;
 }
 
 .item,
