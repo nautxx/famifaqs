@@ -1,3 +1,14 @@
+@property --hue {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 0;
+}
+
+@keyframes rgb-cycle {
+    from {--hue: 0;}
+    to {--hue: 360;}
+}
+
 :root {
     --font-sans: "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     --font-serif: "EB Garamond", serif;
@@ -108,6 +119,16 @@ body.theme-quiet {
     --sub-color: #A7A7AF;
 }
 
+body.theme-rgb {
+    --hue: 0;
+    animation: rgb-cycle 8s linear infinite;
+    --bg-color: #111111;
+    --bg-alt-color: #1A1A1A;
+    --accent-color: hsl(var(--hue), 100%, 60%);
+    --text-color: #444444;
+    --sub-color: #EEEEEE;
+}
+
 body.theme-trackspec {
     --bg-color: #FFFFFF;
     --bg-alt-color: #fafafa;
@@ -214,6 +235,13 @@ body.theme-ube {
     --swatch-accent-color: #009DDD;
     --swatch-text-color: #EBEBF5;
     --swatch-sub-color: #A7A7AF;
+}
+
+.theme-option[data-theme="rgb"] {
+    --swatch-bg-color: #111111;
+    --swatch-accent-color: #FFFFFF;
+    --swatch-text-color: #444444;
+    --swatch-sub-color: #EEEEEE;
 }
 
 .theme-option[data-theme="trackspec"] {
