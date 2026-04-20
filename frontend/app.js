@@ -35,11 +35,13 @@
 /**
  * Available theme names
  * @typedef {
+ *   "aguila" |
  *   "calm" |
  *   "cheesecake" |
  *   "frozen-llama" |
  *   "lavender" |
  *   "muted" |
+ *   "nebula" |
  *   "olivia" |
  *   "paper" |
  *   "pastel" |
@@ -138,25 +140,222 @@ const Carousel = {
     this.setSpeed(saved);
   },
 
+  applySavedMode() {
+    const saved = localStorage.getItem("Carousel-mode") || "fade";
+    this.setMode(saved);
+  },
+
+  setSpeed(speed) {
+    const map = {
+      slow: 1.5,
+      normal: 1,
+      fast: 0.5,
+    };
+
+    this.state.speedMultiplier = map[speed] || 1;
+    localStorage.setItem("Carousel-speed", speed);
+
+    document.querySelectorAll("[data-speed]").forEach((btn) => {
+      btn.classList.toggle("is-active", btn.dataset.speed === speed);
+    });
+
+    this.renderDesktopSettingsOptions();
+    this.renderSettingsOptions(this.state.activeSettingsGroup);
+  },
+
+  setMode(mode) {
+    this.state.mode = mode;
+    localStorage.setItem("Carousel-mode", mode);
+
+    document.querySelectorAll("[data-mode]").forEach((btn) => {
+      btn.classList.toggle("is-active", btn.dataset.mode === mode);
+    });
+
+    this.renderDesktopSettingsOptions();
+    this.renderSettingsOptions(this.state.activeSettingsGroup);
+  },
+
+  getCurrentSpeedKey() {
+    const speedMap = {
+      1.5: "slow",
+      1: "normal",
+      0.5: "fast",
+    };
+
+    return speedMap[this.state.speedMultiplier] || "normal";
+  },
+
+  getSettingsOptions(group) {
+    return this.config.settingsGroups[group] || [];
+  },
+
+  isSettingsOptionActive(group, value) {
+    if (group === "mode") {
+      return this.state.mode === value;
+    }
+
+    if (group === "rate") {
+      return this.getCurrentSpeedKey() === value;
+    }
+
+    return false;
+  },
+
+  setSettingsGroup(group) {
+    const container = this.elements.desktopSettingsOptions;
+
+    document.querySelectorAll("[data-settings-group]").forEach((button) => {
+      button.classList.toggle(
+        "is-active",
+        button.dataset.settingsGroup === group,
+      );
+    });
+
+    this.state.activeSettingsGroup = group;
+    this.renderSettingsOptions(group);
+
+    if (!container) {
+      this.renderDesktopSettingsOptions();
+      return;
+    }
+
+    const currentWidth = container.offsetWidth;
+    const nextWidth = this.measureDesktopSettingsWidth(group);
+
+    container.style.width = `${currentWidth}px`;
+    container.style.transition = "width 0.25s ease, opacity 0.1s ease";
+
+    container.style.opacity = "0";
+
+    setTimeout(() => {
+      this.renderDesktopSettingsOptions();
+      container.style.width = `${nextWidth}px`;
+      container.style.opacity = "1";
+    }, 90);
+  },
+
+  getDesktopSettingsMarkup(group) {
+    const options = this.getSettingsOptions(group);
+
+    return options
+      .map((option) => {
+        const isActive = this.isSettingsOptionActive(group, option.value);
+
+        return `
+        <button
+          type="button"
+          class="control-option ${isActive ? "is-active" : ""}"
+          ${option.attr}="${option.value}">
+          ${option.label}
+        </button>
+      `;
+      })
+      .join("");
+  },
+
+  renderInitialItem() {
+    const item = this.getNextItem();
+    if (!item) return;
+
+    this.elements.item.textContent = item.text;
+    this.elements.item.style.opacity = "1";
+
+    this.state.lastItemId = item.id;
+    this.rememberItem(item.id);
+    this.rememberType(item.type);
+
+    this.state.history = [item];
+    this.state.historyIndex = 0;
+  },
+
+  renderMessage(message) {
+    this.elements.item.textContent = message;
+    this.elements.item.style.opacity = "1";
+  },
+
+  renderItemDirect(item) {
+    const el = this.elements.item;
+    if (!el) return;
+
+    this.clearTypingTimer();
+
+    el.textContent = item.text;
+    el.style.opacity = "1";
+    el.style.filter = "blur(0px)";
+    el.style.transform = "scale(1)";
+    this.state.lastItemId = item.id;
+  },
+
+  renderNotifications(notifications) {
+    const container = document.querySelector("#notifications-content");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    if (!notifications.length) {
+      container.innerHTML = `<p class="drawer-empty">Nothing to show.</p>`;
+      return;
+    }
+
+    notifications.forEach((notification) => {
+      const row = document.createElement("div");
+      row.className = "notification-row";
+
+      const type = notification.type
+        ? notification.type.charAt(0).toUpperCase() + notification.type.slice(1)
+        : "Notification";
+
+      row.innerHTML = `
+        <div class="notification-bar"></div>
+        <div class="notification-content">
+          <span class="notification-type">${type}</span>
+          <p class="notification-text">${notification.text}</p>
+        </div>
+      `;
+
+      container.appendChild(row);
+    });
+  },
+
+  renderDesktopSettingsOptions() {
+    const container = this.elements.desktopSettingsOptions;
+    if (!container) return;
+
+    container.innerHTML = this.getDesktopSettingsMarkup(
+      this.state.activeSettingsGroup,
+    );
+  },
+
+  renderSettingsOptions(group) {
+    const container = document.getElementById("settings-options");
+    if (!container) return;
+
+    const options = this.getSettingsOptions(group);
+
+    container.innerHTML = options
+      .map((option) => {
+        const isActive = this.isSettingsOptionActive(group, option.value);
+
+        return `
+        <button
+          type="button"
+          class="settings-option ${isActive ? "is-active" : ""}"
+          ${option.attr}="${option.value}">
+          ${option.label}
+        </button>
+      `;
+      })
+      .join("");
+  },
+
   getTypingCharMs() {
     const map = {
       slow: 40,
-
       normal: 22,
-
       fast: 12,
     };
 
     return map[this.getCurrentSpeedKey()] || 22;
-  },
-
-  clearTypingTimer() {
-    if (this.state.typingTimer) {
-      clearTimeout(this.state.typingTimer);
-      this.state.typingTimer = null;
-    }
-
-    this.state.isTyping = false;
   },
 
   getTypingStartDelayMs() {
@@ -167,6 +366,15 @@ const Carousel = {
     };
 
     return map[this.getCurrentSpeedKey()] || 80;
+  },
+
+  clearTypingTimer() {
+    if (this.state.typingTimer) {
+      clearTimeout(this.state.typingTimer);
+      this.state.typingTimer = null;
+    }
+
+    this.state.isTyping = false;
   },
 
   typeItem(text) {
@@ -218,43 +426,237 @@ const Carousel = {
     this.state.typingTimer = setTimeout(typeNext, typingStartDelayMs);
   },
 
-  setSpeed(speed) {
-    const map = {
-      slow: 1.5,
-      normal: 1,
-      fast: 0.5,
-    };
+  showNextItem() {
+    const item = this.getNextItem();
+    if (!item || !this.elements.item) return;
 
-    this.state.speedMultiplier = map[speed] || 1;
-    localStorage.setItem("Carousel-speed", speed);
+    // update history
+    this.state.history = this.state.history.slice(
+      0,
+      this.state.historyIndex + 1,
+    );
+    this.state.history.push(item);
+    this.state.historyIndex++;
 
-    document.querySelectorAll("[data-speed]").forEach((btn) => {
-      btn.classList.toggle("is-active", btn.dataset.speed === speed);
-    });
+    const el = this.elements.item;
+    const duration = this.config.fadeDurationMs;
 
-    this.renderDesktopSettingsOptions();
-    this.renderSettingsOptions(this.state.activeSettingsGroup);
+    this.clearTypingTimer();
+
+    // INSTANT mode
+    if (this.state.mode === "instant") {
+      el.textContent = item.text;
+      el.style.opacity = "1";
+      el.style.filter = "blur(0px)";
+    }
+
+    // FADE mode
+    else if (this.state.mode === "fade") {
+      el.style.transition = `opacity ${duration}ms ease, filter ${duration}ms ease`;
+      el.style.opacity = "0";
+      el.style.filter = "blur(1px)";
+
+      setTimeout(() => {
+        el.textContent = item.text;
+        el.style.opacity = "1";
+        el.style.filter = "blur(0px)";
+      }, duration);
+    }
+
+    // TYPING mode
+    else if (this.state.mode === "typing") {
+      this.typeItem(item.text);
+    }
+
+    // POP mode
+    else if (this.state.mode === "pop") {
+      const duration = 120;
+
+      el.style.transition = `transform ${duration}ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity ${duration}ms ease-out`;
+      el.style.transform = "scale(0.75)";
+      el.style.opacity = "0";
+
+      setTimeout(() => {
+        el.textContent = item.text;
+
+        el.style.transform = "scale(1.16)";
+        el.style.opacity = "1";
+
+        requestAnimationFrame(() => {
+          el.style.transition = `transform ${duration}ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity ${duration}ms ease-out`;
+          el.style.transform = "scale(1)";
+        });
+      }, duration);
+    }
+
+    // update state ONCE
+    this.state.lastItemId = item.id;
+    this.rememberItem(item.id);
+    this.rememberType(item.type);
   },
 
-  setMode(mode) {
-    this.state.mode = mode;
-    localStorage.setItem("Carousel-mode", mode);
-
-    document.querySelectorAll("[data-mode]").forEach((btn) => {
-      btn.classList.toggle("is-active", btn.dataset.mode === mode);
-    });
-
-    this.renderDesktopSettingsOptions();
-    this.renderSettingsOptions(this.state.activeSettingsGroup);
+  getItemWeight(item) {
+    return item.priority || 1;
   },
 
-  applySavedMode() {
-    const saved = localStorage.getItem("Carousel-mode") || "fade";
-    this.setMode(saved);
+  getWeightedRandomItem(items) {
+    const totalWeight = items.reduce(
+      (sum, item) => sum + this.getItemWeight(item),
+      0,
+    );
+    let random = Math.random() * totalWeight;
+
+    for (const item of items) {
+      random -= this.getItemWeight(item);
+      if (random <= 0) return item;
+    }
+
+    return items[items.length - 1] || null;
   },
 
-  formatThemeName(name) {
-    return name.replace(/-/g, " ");
+  rememberItem(itemId) {
+    this.state.recentItemIds.push(itemId);
+    if (this.state.recentItemIds.length > this.config.recentItemsLimit) {
+      this.state.recentItemIds.shift();
+    }
+  },
+
+  rememberType(type) {
+    this.state.recentTypes.push(type);
+    if (this.state.recentTypes.length > this.config.maxSameTypeInRow) {
+      this.state.recentTypes.shift();
+    }
+  },
+
+  isTypeOverused(type) {
+    if (this.state.recentTypes.length < this.config.maxSameTypeInRow)
+      return false;
+    return this.state.recentTypes.every((t) => t === type);
+  },
+
+  getNextItem() {
+    if (!this.state.items.length) return null;
+
+    let eligibleItems = this.state.items.filter(
+      (item) =>
+        !this.state.recentItemIds.includes(item.id) &&
+        !this.isTypeOverused(item.type),
+    );
+
+    if (!eligibleItems.length) {
+      eligibleItems = this.state.items.filter(
+        (item) => !this.state.recentItemIds.includes(item.id),
+      );
+    }
+
+    if (!eligibleItems.length) {
+      eligibleItems = this.state.items.filter(
+        (item) => item.id !== this.state.lastItemId,
+      );
+    }
+
+    if (!eligibleItems.length) {
+      eligibleItems = [...this.state.items];
+    }
+
+    return this.getWeightedRandomItem(eligibleItems);
+  },
+
+  goToPreviousItem() {
+    if (this.state.historyIndex <= 0) return;
+
+    this.state.historyIndex--;
+    const item = this.state.history[this.state.historyIndex];
+
+    this.renderItemDirect(item);
+  },
+
+  goToNextFromHistory() {
+    if (this.state.historyIndex < this.state.history.length - 1) {
+      this.state.historyIndex++;
+      const item = this.state.history[this.state.historyIndex];
+      this.renderItemDirect(item);
+      return;
+    }
+
+    this.showNextItem();
+  },
+
+  scheduleNextItem() {
+    const currentText = this.elements.item.textContent || "";
+    let delay =
+      (this.getDisplayTime(currentText) + this.config.basePauseMs) *
+      this.state.speedMultiplier;
+
+    const cadenceFactors = [0.25, 1, 1.75];
+    const randomFactor =
+      cadenceFactors[Math.floor(Math.random() * cadenceFactors.length)];
+
+    delay *= randomFactor;
+
+    this.state.rotationTimer = setTimeout(() => {
+      this.showNextItem();
+      this.scheduleNextItem();
+    }, delay);
+  },
+
+  resetRotationTimer() {
+    if (this.state.rotationTimer) {
+      clearTimeout(this.state.rotationTimer);
+    }
+    this.scheduleNextItem();
+  },
+
+  getDisplayTime(text) {
+    const words = text.trim().split(/\s+/).length;
+    const punctuation = (text.match(/[.,;:!?—-]/g) || []).length;
+
+    let time = (words / 2.4) * 1000;
+    time += punctuation * 350;
+    time += 3500;
+
+    if (this.state.mode === "typing") {
+      time += text.length * this.config.typingCharMs;
+    }
+
+    return Math.min(Math.max(time, 7000), 18000);
+  },
+
+  async loadItems() {
+    try {
+      const response = await fetch(this.config.itemsUrl);
+
+      if (!response.ok) throw new Error();
+
+      const data = await response.json();
+      this.state.items = this.normalizeItems(data.items);
+
+      if (!this.state.items.length) {
+        this.renderMessage(this.config.messages.empty);
+        return;
+      }
+
+      this.renderInitialItem();
+      this.scheduleNextItem();
+    } catch {
+      this.renderMessage(this.config.messages.error);
+    }
+  },
+
+  normalizeItems(items) {
+    return (items || [])
+      .filter((item) => item && item.active !== false)
+      .filter((item) => typeof item.text === "string" && item.text.trim());
+  },
+
+  async loadNotifications() {
+    try {
+      const res = await fetch(this.config.notificationsUrl);
+      const data = await res.json();
+      this.renderNotifications(data.notifications || []);
+    } catch {
+      this.renderNotifications([]);
+    }
   },
 
   openThemeModal() {
@@ -338,134 +740,16 @@ const Carousel = {
     }, 70);
   },
 
-  getCurrentSpeedKey() {
-    const speedMap = {
-      1.5: "slow",
-      1: "normal",
-      0.5: "fast",
-    };
-
-    return speedMap[this.state.speedMultiplier] || "normal";
+  openDrawer() {
+    const d = document.getElementById("notices-drawer");
+    d.hidden = false;
+    requestAnimationFrame(() => d.classList.add("is-open"));
   },
 
-  getSettingsOptions(group) {
-    return this.config.settingsGroups[group] || [];
-  },
-
-  isSettingsOptionActive(group, value) {
-    if (group === "mode") {
-      return this.state.mode === value;
-    }
-
-    if (group === "rate") {
-      return this.getCurrentSpeedKey() === value;
-    }
-
-    return false;
-  },
-
-  renderDesktopSettingsOptions() {
-    const container = this.elements.desktopSettingsOptions;
-    if (!container) return;
-
-    container.innerHTML = this.getDesktopSettingsMarkup(
-      this.state.activeSettingsGroup,
-    );
-  },
-
-  renderSettingsOptions(group) {
-    const container = document.getElementById("settings-options");
-    if (!container) return;
-
-    const options = this.getSettingsOptions(group);
-
-    container.innerHTML = options
-      .map((option) => {
-        const isActive = this.isSettingsOptionActive(group, option.value);
-
-        return `
-        <button
-          type="button"
-          class="settings-option ${isActive ? "is-active" : ""}"
-          ${option.attr}="${option.value}">
-          ${option.label}
-        </button>
-      `;
-      })
-      .join("");
-  },
-
-  getDesktopSettingsMarkup(group) {
-    const options = this.getSettingsOptions(group);
-
-    return options
-      .map((option) => {
-        const isActive = this.isSettingsOptionActive(group, option.value);
-
-        return `
-        <button
-          type="button"
-          class="control-option ${isActive ? "is-active" : ""}"
-          ${option.attr}="${option.value}">
-          ${option.label}
-        </button>
-      `;
-      })
-      .join("");
-  },
-
-  measureDesktopSettingsWidth(group) {
-    const probe = document.createElement("div");
-    probe.className = "control-group desktop-controls";
-    probe.id = "desktop-settings-options-probe";
-    probe.style.position = "absolute";
-    probe.style.visibility = "hidden";
-    probe.style.pointerEvents = "none";
-    probe.style.width = "auto";
-    probe.style.whiteSpace = "nowrap";
-    probe.style.left = "-9999px";
-    probe.style.top = "0";
-
-    probe.innerHTML = this.getDesktopSettingsMarkup(group);
-    document.body.appendChild(probe);
-
-    const width = probe.offsetWidth;
-    probe.remove();
-
-    return width;
-  },
-
-  setSettingsGroup(group) {
-    const container = this.elements.desktopSettingsOptions;
-
-    document.querySelectorAll("[data-settings-group]").forEach((button) => {
-      button.classList.toggle(
-        "is-active",
-        button.dataset.settingsGroup === group,
-      );
-    });
-
-    this.state.activeSettingsGroup = group;
-    this.renderSettingsOptions(group);
-
-    if (!container) {
-      this.renderDesktopSettingsOptions();
-      return;
-    }
-
-    const currentWidth = container.offsetWidth;
-    const nextWidth = this.measureDesktopSettingsWidth(group);
-
-    container.style.width = `${currentWidth}px`;
-    container.style.transition = "width 0.25s ease, opacity 0.1s ease";
-
-    container.style.opacity = "0";
-
-    setTimeout(() => {
-      this.renderDesktopSettingsOptions();
-      container.style.width = `${nextWidth}px`;
-      container.style.opacity = "1";
-    }, 90);
+  closeDrawer() {
+    const d = document.getElementById("notices-drawer");
+    d.classList.remove("is-open");
+    setTimeout(() => (d.hidden = true), 250);
   },
 
   bindEvents() {
@@ -613,312 +897,44 @@ const Carousel = {
     });
   },
 
-  async loadItems() {
-    try {
-      const response = await fetch(this.config.itemsUrl);
+  handleSwipe() {
+    const threshold = 50;
+    const diff = this.state.touch.endX - this.state.touch.startX;
 
-      if (!response.ok) throw new Error();
+    if (Math.abs(diff) < threshold) return;
 
-      const data = await response.json();
-      this.state.items = this.normalizeItems(data.items);
-
-      if (!this.state.items.length) {
-        this.renderMessage(this.config.messages.empty);
-        return;
-      }
-
-      this.renderInitialItem();
-      this.scheduleNextItem();
-    } catch {
-      this.renderMessage(this.config.messages.error);
-    }
-  },
-
-  normalizeItems(items) {
-    return (items || [])
-      .filter((item) => item && item.active !== false)
-      .filter((item) => typeof item.text === "string" && item.text.trim());
-  },
-
-  getItemWeight(item) {
-    return item.priority || 1;
-  },
-
-  getWeightedRandomItem(items) {
-    const totalWeight = items.reduce(
-      (sum, item) => sum + this.getItemWeight(item),
-      0,
-    );
-    let random = Math.random() * totalWeight;
-
-    for (const item of items) {
-      random -= this.getItemWeight(item);
-      if (random <= 0) return item;
+    if (diff > 0) {
+      this.goToPreviousItem();
+    } else {
+      this.goToNextFromHistory();
     }
 
-    return items[items.length - 1] || null;
+    this.resetRotationTimer();
   },
 
-  rememberItem(itemId) {
-    this.state.recentItemIds.push(itemId);
-    if (this.state.recentItemIds.length > this.config.recentItemsLimit) {
-      this.state.recentItemIds.shift();
-    }
+  formatThemeName(name) {
+    return name.replace(/-/g, " ");
   },
 
-  rememberType(type) {
-    this.state.recentTypes.push(type);
-    if (this.state.recentTypes.length > this.config.maxSameTypeInRow) {
-      this.state.recentTypes.shift();
-    }
-  },
+  measureDesktopSettingsWidth(group) {
+    const probe = document.createElement("div");
+    probe.className = "control-group desktop-controls";
+    probe.id = "desktop-settings-options-probe";
+    probe.style.position = "absolute";
+    probe.style.visibility = "hidden";
+    probe.style.pointerEvents = "none";
+    probe.style.width = "auto";
+    probe.style.whiteSpace = "nowrap";
+    probe.style.left = "-9999px";
+    probe.style.top = "0";
 
-  isTypeOverused(type) {
-    if (this.state.recentTypes.length < this.config.maxSameTypeInRow)
-      return false;
-    return this.state.recentTypes.every((t) => t === type);
-  },
+    probe.innerHTML = this.getDesktopSettingsMarkup(group);
+    document.body.appendChild(probe);
 
-  getNextItem() {
-    if (!this.state.items.length) return null;
+    const width = probe.offsetWidth;
+    probe.remove();
 
-    let eligibleItems = this.state.items.filter(
-      (item) =>
-        !this.state.recentItemIds.includes(item.id) &&
-        !this.isTypeOverused(item.type),
-    );
-
-    if (!eligibleItems.length) {
-      eligibleItems = this.state.items.filter(
-        (item) => !this.state.recentItemIds.includes(item.id),
-      );
-    }
-
-    if (!eligibleItems.length) {
-      eligibleItems = this.state.items.filter(
-        (item) => item.id !== this.state.lastItemId,
-      );
-    }
-
-    if (!eligibleItems.length) {
-      eligibleItems = [...this.state.items];
-    }
-
-    return this.getWeightedRandomItem(eligibleItems);
-  },
-
-  renderInitialItem() {
-    const item = this.getNextItem();
-    if (!item) return;
-
-    this.elements.item.textContent = item.text;
-    this.elements.item.style.opacity = "1";
-
-    this.state.lastItemId = item.id;
-    this.rememberItem(item.id);
-    this.rememberType(item.type);
-
-    this.state.history = [item];
-    this.state.historyIndex = 0;
-  },
-
-  renderMessage(message) {
-    this.elements.item.textContent = message;
-    this.elements.item.style.opacity = "1";
-  },
-
-  showNextItem() {
-    const item = this.getNextItem();
-    if (!item || !this.elements.item) return;
-
-    // update history
-    this.state.history = this.state.history.slice(
-      0,
-      this.state.historyIndex + 1,
-    );
-    this.state.history.push(item);
-    this.state.historyIndex++;
-
-    const el = this.elements.item;
-    const duration = this.config.fadeDurationMs;
-
-    this.clearTypingTimer();
-
-    // INSTANT mode
-    if (this.state.mode === "instant") {
-      el.textContent = item.text;
-      el.style.opacity = "1";
-      el.style.filter = "blur(0px)";
-    }
-
-    // FADE mode
-    else if (this.state.mode === "fade") {
-      el.style.transition = `opacity ${duration}ms ease, filter ${duration}ms ease`;
-      el.style.opacity = "0";
-      el.style.filter = "blur(1px)";
-
-      setTimeout(() => {
-        el.textContent = item.text;
-        el.style.opacity = "1";
-        el.style.filter = "blur(0px)";
-      }, duration);
-    }
-
-    // TYPING mode
-    else if (this.state.mode === "typing") {
-      this.typeItem(item.text);
-    }
-
-    // POP mode
-    else if (this.state.mode === "pop") {
-      const duration = 120;
-
-      el.style.transition = `transform ${duration}ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity ${duration}ms ease-out`;
-      el.style.transform = "scale(0.75)";
-      el.style.opacity = "0";
-
-      setTimeout(() => {
-        el.textContent = item.text;
-
-        el.style.transform = "scale(1.16)";
-        el.style.opacity = "1";
-
-        requestAnimationFrame(() => {
-          el.style.transition = `transform ${duration}ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity ${duration}ms ease-out`;
-          el.style.transform = "scale(1)";
-        });
-      }, duration);
-    }
-
-    // update state ONCE
-    this.state.lastItemId = item.id;
-    this.rememberItem(item.id);
-    this.rememberType(item.type);
-  },
-
-  goToPreviousItem() {
-    if (this.state.historyIndex <= 0) return;
-
-    this.state.historyIndex--;
-    const item = this.state.history[this.state.historyIndex];
-
-    this.renderItemDirect(item);
-  },
-
-  goToNextFromHistory() {
-    if (this.state.historyIndex < this.state.history.length - 1) {
-      this.state.historyIndex++;
-      const item = this.state.history[this.state.historyIndex];
-      this.renderItemDirect(item);
-      return;
-    }
-
-    this.showNextItem();
-  },
-
-  renderItemDirect(item) {
-    const el = this.elements.item;
-    if (!el) return;
-
-    this.clearTypingTimer();
-
-    el.textContent = item.text;
-    el.style.opacity = "1";
-    el.style.filter = "blur(0px)";
-    el.style.transform = "scale(1)";
-    this.state.lastItemId = item.id;
-  },
-
-  // scheduleNextItem() {
-  //   const currentText = this.elements.item.textContent || "";
-  //   const delay =
-  //     (this.getDisplayTime(currentText) + this.config.basePauseMs) *
-  //     this.state.speedMultiplier;
-
-  //   this.state.rotationTimer = setTimeout(() => {
-  //     this.showNextItem();
-  //     this.scheduleNextItem();
-  //   }, delay);
-  // },
-  scheduleNextItem() {
-    const currentText = this.elements.item.textContent || "";
-    let delay =
-      (this.getDisplayTime(currentText) + this.config.basePauseMs) *
-      this.state.speedMultiplier;
-
-    const cadenceFactors = [0.25, 1, 1.75];
-    const randomFactor =
-      cadenceFactors[Math.floor(Math.random() * cadenceFactors.length)];
-
-    delay *= randomFactor;
-
-    this.state.rotationTimer = setTimeout(() => {
-      this.showNextItem();
-      this.scheduleNextItem();
-    }, delay);
-  },
-
-  resetRotationTimer() {
-    if (this.state.rotationTimer) {
-      clearTimeout(this.state.rotationTimer);
-    }
-    this.scheduleNextItem();
-  },
-
-  getDisplayTime(text) {
-    const words = text.trim().split(/\s+/).length;
-    const punctuation = (text.match(/[.,;:!?—-]/g) || []).length;
-
-    let time = (words / 2.4) * 1000;
-    time += punctuation * 350;
-    time += 3500;
-
-    if (this.state.mode === "typing") {
-      time += text.length * this.config.typingCharMs;
-    }
-
-    return Math.min(Math.max(time, 7000), 18000);
-  },
-
-  async loadNotifications() {
-    try {
-      const res = await fetch(this.config.notificationsUrl);
-      const data = await res.json();
-      this.renderNotifications(data.notifications || []);
-    } catch {
-      this.renderNotifications([]);
-    }
-  },
-
-  renderNotifications(notifications) {
-    const container = document.querySelector("#notifications-content");
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    if (!notifications.length) {
-      container.innerHTML = `<p class="drawer-empty">Nothing to show.</p>`;
-      return;
-    }
-
-    notifications.forEach((notification) => {
-      const row = document.createElement("div");
-      row.className = "notification-row";
-
-      const type = notification.type
-        ? notification.type.charAt(0).toUpperCase() + notification.type.slice(1)
-        : "Notification";
-
-      row.innerHTML = `
-        <div class="notification-bar"></div>
-        <div class="notification-content">
-          <span class="notification-type">${type}</span>
-          <p class="notification-text">${notification.text}</p>
-        </div>
-      `;
-
-      container.appendChild(row);
-    });
+    return width;
   },
 
   setTheme(theme) {
@@ -943,33 +959,6 @@ const Carousel = {
         label.textContent = this.formatThemeName(theme);
       }
     }
-  },
-
-  openDrawer() {
-    const d = document.getElementById("notices-drawer");
-    d.hidden = false;
-    requestAnimationFrame(() => d.classList.add("is-open"));
-  },
-
-  closeDrawer() {
-    const d = document.getElementById("notices-drawer");
-    d.classList.remove("is-open");
-    setTimeout(() => (d.hidden = true), 250);
-  },
-
-  handleSwipe() {
-    const threshold = 50;
-    const diff = this.state.touch.endX - this.state.touch.startX;
-
-    if (Math.abs(diff) < threshold) return;
-
-    if (diff > 0) {
-      this.goToPreviousItem();
-    } else {
-      this.goToNextFromHistory();
-    }
-
-    this.resetRotationTimer();
   },
 };
 
