@@ -88,7 +88,7 @@ const Carousel = {
     historyIndex: -1,
     speedMultiplier: 1,
     mode: "fade",
-    activeSettingsGroup: "rate",
+    activeSettingsGroup: "mode",
     touch: {
       startX: 0,
       endX: 0,
