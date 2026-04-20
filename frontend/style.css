@@ -230,8 +230,8 @@ h1 {
     display: flex;
     flex-direction: column;
     font-family: var(--font-sans);
-    background: var(--surface-color);
-    color: var(--surface-text-color);
+    background: var(--bg-color);
+    color: var(--sub-color);
     border-left: 3px solid var(--bg-alt-color);
     transform: translateX(100%);
     transition: transform 0.1s ease;
@@ -382,6 +382,7 @@ h1 {
 .theme-modal-panel {
     max-height: 80svh;
     overflow-y: auto;
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     position: absolute;
     display: flex;
@@ -390,8 +391,8 @@ h1 {
     gap: 0;
     padding: 0;
     border-radius: 12px;
-    background: var(--surface-color);
-    color: var(--surface-text-color);
+    background: var(--bg-color);
+    color: var(--sub-color);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
     box-shadow: 0 0 0 0.2em var(--bg-alt-color);
@@ -402,7 +403,11 @@ h1 {
         transform 0.1s ease,
         background 0.1s ease;
     pointer-events: auto;
-    overflow: hidden;
+}
+
+.theme-modal.is-open .theme-modal-panel {
+    transform: translateX(-50%) translateY(-100%) scale(1);
+    opacity: 1;
 }
 
 .theme-modal-panel::-webkit-scrollbar {
@@ -439,10 +444,12 @@ h1 {
         background 0.1s ease;
 }
 
-.theme-option:hover {
-    background: var(--surface-hover-color);
-    color: var(--surface-text-color);
-    opacity: 1;
+@media (hover: hover) and (pointer: fine) {
+    .theme-option:hover {
+        background: var(--surface-hover-color);
+        color: var(--surface-text-color);
+        opacity: 1;
+    }
 }
 
 .theme-option.is-active {
@@ -638,13 +645,15 @@ kbd {
         opacity 0.1s ease;
 }
 
-.settings-option:hover {
-    background: color-mix(in srgb, var(--surface-text-color) 10%, transparent);
-}
-
 .settings-option.is-active {
     background: var(--accent-color);
     color: var(--bg-color);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .settings-option:hover {
+        background: color-mix(in srgb, var(--surface-text-color) 10%, transparent);
+    }
 }
 
 @media (max-width: 480px) {
@@ -702,5 +711,31 @@ kbd {
     .theme-modal-panel {
         scrollbar-width: thin;
         scrollbar-color: color-mix(in srgb, var(--surface-text-color) 28%, transparent) transparent;
+    }
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .control-option:hover {
+        color: var(--sub-color);
+        opacity: 1;
+    }
+
+    .top-row-button:hover {
+        opacity: 1;
+        color: var(--sub-color);
+    }
+
+    .bottom-bar button:hover,
+    .bottom-bar a:hover {
+        color: var(--sub-color);
+    }
+
+    .settings-close-button:hover {
+        opacity: 1;
+        color: var(--sub-color);
+    }
+
+    #theme-toggle:hover i {
+        opacity: 1;
     }
 }
