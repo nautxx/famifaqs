@@ -283,34 +283,20 @@ const Carousel = {
     const container = document.getElementById("settings-options");
     if (!container) return;
 
-    const options =
-      group === "mode"
-        ? [
-            { label: "fade", value: "fade", attr: "data-mode" },
-            { label: "typing", value: "typing", attr: "data-mode" },
-            { label: "instant", value: "instant", attr: "data-mode" },
-          ]
-        : [
-            { label: "slow", value: "slow", attr: "data-speed" },
-            { label: "normal", value: "normal", attr: "data-speed" },
-            { label: "fast", value: "fast", attr: "data-speed" },
-          ];
+    const options = this.getSettingsOptions(group);
 
     container.innerHTML = options
       .map((option) => {
-        const isActive =
-          group === "mode"
-            ? this.state.mode === option.value
-            : this.getCurrentSpeedKey() === option.value;
+        const isActive = this.isSettingsOptionActive(group, option.value);
 
         return `
-          <button
-            type="button"
-            class="settings-option ${isActive ? "is-active" : ""}"
-            ${option.attr}="${option.value}">
-            ${option.label}
-          </button>
-        `;
+        <button
+          type="button"
+          class="settings-option ${isActive ? "is-active" : ""}"
+          ${option.attr}="${option.value}">
+          ${option.label}
+        </button>
+      `;
       })
       .join("");
   },
