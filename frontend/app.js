@@ -397,15 +397,15 @@ const Carousel = {
     const speed = this.getCurrentSpeedKey();
 
     const charMsMap = {
-      slow: 55,
+      slow: 80,
       normal: 22,
-      fast: 8,
+      fast: 6,
     };
 
     const startDelayMap = {
-      slow: 150,
+      slow: 200,
       normal: 80,
-      fast: 20,
+      fast: 10,
     };
 
     const typingCharMs = charMsMap[speed] || 22;
@@ -593,7 +593,10 @@ const Carousel = {
       (this.getDisplayTime(currentText) + this.config.basePauseMs) *
       this.state.speedMultiplier;
 
-    const cadenceFactors = [0.25, 1, 1.75];
+    const cadenceFactors =
+      this.state.mode === "typing"
+        ? [0.9, 1, 1.15] // much tighter range
+        : [0.75, 1, 1.35];
     const randomFactor =
       cadenceFactors[Math.floor(Math.random() * cadenceFactors.length)];
 
@@ -621,10 +624,41 @@ const Carousel = {
     time += 3500;
 
     if (this.state.mode === "typing") {
-      time += text.length * this.config.typingCharMs;
+      const speed = this.getCurrentSpeedKey();
+
+      const charMsMap = {
+        slow: 90,
+        normal: 22,
+        fast: 6,
+      };
+
+      const startDelayMap = {
+        slow: 260,
+        normal: 80,
+        fast: 10,
+      };
+
+      const typingCharMs = charMsMap[speed] || 22;
+      const typingStartDelayMs = startDelayMap[speed] || 80;
+
+      let typingTime = typingStartDelayMs;
+
+      for (const char of text) {
+        let delay = typingCharMs;
+
+        if (/[.,!?]/.test(char)) {
+          delay *= 3.5;
+        } else if (char === " ") {
+          delay *= 1.4;
+        }
+
+        typingTime += delay;
+      }
+
+      time += typingTime + 700;
     }
 
-    return Math.min(Math.max(time, 7000), 18000);
+    return Math.min(Math.max(time, 7000), 30000);
   },
 
   async loadItems() {
