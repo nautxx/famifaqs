@@ -380,6 +380,9 @@ h1 {
 }
 
 .theme-modal-panel {
+    max-height: 80svh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     position: absolute;
     display: flex;
     flex-direction: column;
@@ -400,6 +403,15 @@ h1 {
         background 0.1s ease;
     pointer-events: auto;
     overflow: hidden;
+}
+
+.theme-modal-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.theme-modal-panel::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--text-color) 40%, transparent);
+    border-radius: 3px;
 }
 
 .theme-option {
@@ -488,20 +500,6 @@ kbd {
 
 .mobile-settings-group {
     display: none;
-}
-
-@media (max-width: 480px) {
-    .desktop-controls {
-        display: none;
-    }
-
-    .mobile-settings-group {
-        display: inline-flex;
-    }
-
-    .control-bar {
-        justify-content: center;
-    }
 }
 
 .settings-modal {
@@ -647,4 +645,62 @@ kbd {
 .settings-option.is-active {
     background: var(--accent-color);
     color: var(--bg-color);
+}
+
+@media (max-width: 480px) {
+    .desktop-controls {
+        display: none;
+    }
+
+    .mobile-settings-group {
+        display: inline-flex;
+    }
+
+    .control-bar {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px),
+(max-height: 500px) {
+    .theme-modal {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 16px;
+        background: rgba(0, 0, 0, 0.25);
+        pointer-events: auto;
+    }
+
+    .theme-modal-panel {
+        position: relative !important;
+        left: auto !important;
+        top: auto !important;
+        transform: none !important;
+
+        width: min(92vw, 420px);
+        max-height: calc(100svh - 32px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+
+        border-radius: 16px;
+        padding: 0;
+    }
+
+    .theme-modal-panel::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .theme-modal-panel::-webkit-scrollbar-thumb {
+        background: color-mix(in srgb, var(--surface-text-color) 28%, transparent);
+        border-radius: 999px;
+    }
+
+    .theme-modal-panel {
+        scrollbar-width: thin;
+        scrollbar-color: color-mix(in srgb, var(--surface-text-color) 28%, transparent) transparent;
+    }
 }

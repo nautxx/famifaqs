@@ -182,15 +182,25 @@ const Carousel = {
 
     if (!modal || !toggle || !panel) return;
 
-    const rect = toggle.getBoundingClientRect();
+    const isMobile = window.innerWidth <= 768 || window.innerHeight <= 500;
 
-    panel.style.left = `${rect.left + rect.width / 2}px`;
-    panel.style.top = `${rect.top - 12}px`;
+    if (!isMobile) {
+      const rect = toggle.getBoundingClientRect();
+      panel.style.left = `${rect.left + rect.width / 2}px`;
+      panel.style.top = `${rect.top - 12}px`;
+    } else {
+      panel.style.left = "";
+      panel.style.top = "";
+    }
 
     modal.hidden = false;
 
     requestAnimationFrame(() => {
-      panel.style.transform = "translateX(-50%) translateY(-100%) scale(1)";
+      if (!isMobile) {
+        panel.style.transform = "translateX(-50%) translateY(-100%) scale(1)";
+      } else {
+        panel.style.transform = "none";
+      }
       panel.style.opacity = "1";
     });
   },
@@ -201,8 +211,12 @@ const Carousel = {
 
     if (!modal || !panel) return;
 
+    const isMobile = window.innerWidth <= 768 || window.innerHeight <= 500;
+
     panel.style.opacity = "0";
-    panel.style.transform = "translateX(-50%) translateY(-90%) scale(0.96)";
+    panel.style.transform = isMobile
+      ? "none"
+      : "translateX(-50%) translateY(-90%) scale(0.96)";
 
     setTimeout(() => {
       modal.hidden = true;
