@@ -35,11 +35,13 @@
 /**
  * Available theme names
  * @typedef {
+ *   "aguila" |
  *   "calm" |
  *   "cheesecake" |
  *   "frozen-llama" |
  *   "lavender" |
  *   "muted" |
+ *   "nebula" |
  *   "olivia" |
  *   "paper" |
  *   "pastel" |
@@ -63,6 +65,21 @@ const Carousel = {
       empty: "No content available.",
       error: "Could not load content.",
     },
+    typingCharMs: 22,
+    typingStartDelayMs: 80,
+    settingsGroups: {
+      mode: [
+        { label: "instant", value: "instant", attr: "data-mode" },
+        { label: "fade", value: "fade", attr: "data-mode" },
+        { label: "pop", value: "pop", attr: "data-mode" },
+        { label: "typing", value: "typing", attr: "data-mode" },
+      ],
+      rate: [
+        { label: "slow", value: "slow", attr: "data-speed" },
+        { label: "normal", value: "normal", attr: "data-speed" },
+        { label: "fast", value: "fast", attr: "data-speed" },
+      ],
+    },
   },
 
   state: {
@@ -74,6 +91,10 @@ const Carousel = {
     history: [],
     historyIndex: -1,
     speedMultiplier: 1,
+    mode: "fade",
+    activeSettingsGroup: "mode",
+    typingTimer: null,
+    isTyping: false,
     touch: {
       startX: 0,
       endX: 0,
@@ -90,6 +111,8 @@ const Carousel = {
     this.cacheElements();
     this.applySavedTheme();
     this.applySavedSpeed();
+    this.applySavedMode();
+    this.setSettingsGroup(this.state.activeSettingsGroup);
     this.bindEvents();
     this.loadItems();
     this.loadNotifications();
@@ -99,6 +122,11 @@ const Carousel = {
     this.elements.item = document.getElementById("item");
     this.elements.themeToggle = document.getElementById("theme-toggle");
     this.elements.themeModal = document.getElementById("theme-modal");
+    this.elements.settingsModal = document.getElementById("settings-modal");
+    this.elements.desktopSettingsOptions = document.getElementById(
+      "desktop-settings-options",
+    );
+    this.elements.settingsOptions = document.getElementById("settings-options");
   },
 
   applySavedTheme() {
@@ -112,194 +140,364 @@ const Carousel = {
     this.setSpeed(saved);
   },
 
+  applySavedMode() {
+    const saved = localStorage.getItem("Carousel-mode") || "fade";
+    this.setMode(saved);
+  },
+
   setSpeed(speed) {
     const map = {
       slow: 1.5,
-
       normal: 1,
-
       fast: 0.5,
     };
 
     this.state.speedMultiplier = map[speed] || 1;
-
     localStorage.setItem("Carousel-speed", speed);
 
     document.querySelectorAll("[data-speed]").forEach((btn) => {
       btn.classList.toggle("is-active", btn.dataset.speed === speed);
     });
+
+    this.renderDesktopSettingsOptions();
+    this.renderSettingsOptions(this.state.activeSettingsGroup);
   },
 
-  formatThemeName(name) {
-    return name
-      .replace(/-/g, " ");
-  },
+  setMode(mode) {
+    this.state.mode = mode;
+    localStorage.setItem("Carousel-mode", mode);
 
-  openThemeModal() {
-    const modal = this.elements.themeModal;
-    const toggle = this.elements.themeToggle;
-    const panel = modal.querySelector(".theme-modal-panel");
-
-    if (!modal || !toggle || !panel) return;
-
-    const rect = toggle.getBoundingClientRect();
-
-    panel.style.left = `${rect.left + rect.width / 2}px`;
-    panel.style.top = `${rect.top - 12}px`;
-
-    modal.hidden = false;
-
-    requestAnimationFrame(() => {
-      panel.style.transform = "translateX(-50%) translateY(-100%) scale(1)";
-      panel.style.opacity = "1";
+    document.querySelectorAll("[data-mode]").forEach((btn) => {
+      btn.classList.toggle("is-active", btn.dataset.mode === mode);
     });
+
+    this.renderDesktopSettingsOptions();
+    this.renderSettingsOptions(this.state.activeSettingsGroup);
   },
 
-  closeThemeModal() {
-    const modal = this.elements.themeModal;
-    const panel = modal.querySelector(".theme-modal-panel");
+  getCurrentSpeedKey() {
+    const speedMap = {
+      1.5: "slow",
+      1: "normal",
+      0.5: "fast",
+    };
 
-    if (!modal || !panel) return;
+    return speedMap[this.state.speedMultiplier] || "normal";
+  },
 
-    panel.style.opacity = "0";
-    panel.style.transform = "translateX(-50%) translateY(-90%) scale(0.96)";
+  getSettingsOptions(group) {
+    return this.config.settingsGroups[group] || [];
+  },
+
+  isSettingsOptionActive(group, value) {
+    if (group === "mode") {
+      return this.state.mode === value;
+    }
+
+    if (group === "rate") {
+      return this.getCurrentSpeedKey() === value;
+    }
+
+    return false;
+  },
+
+  setSettingsGroup(group) {
+    const container = this.elements.desktopSettingsOptions;
+
+    document.querySelectorAll("[data-settings-group]").forEach((button) => {
+      button.classList.toggle(
+        "is-active",
+        button.dataset.settingsGroup === group,
+      );
+    });
+
+    this.state.activeSettingsGroup = group;
+    this.renderSettingsOptions(group);
+
+    if (!container) {
+      this.renderDesktopSettingsOptions();
+      return;
+    }
+
+    const currentWidth = container.offsetWidth;
+    const nextWidth = this.measureDesktopSettingsWidth(group);
+
+    container.style.width = `${currentWidth}px`;
+    container.style.transition = "width 0.25s ease, opacity 0.1s ease";
+
+    container.style.opacity = "0";
 
     setTimeout(() => {
-      modal.hidden = true;
-    }, 150);
+      this.renderDesktopSettingsOptions();
+      container.style.width = `${nextWidth}px`;
+      container.style.opacity = "1";
+    }, 90);
   },
 
-  bindEvents() {
-    document.body.addEventListener("click", (event) => {
-      const speedButton = event.target.closest("[data-speed]");
-      const themeToggle = event.target.closest("#theme-toggle");
-      const themeButton = event.target.closest("[data-theme]");
-      const modalPanel = event.target.closest(".theme-modal-panel");
-      const githubLink = event.target.closest(".bottom-bar a");
-      const noticeToggle = event.target.closest("#notice-toggle");
+  getDesktopSettingsMarkup(group) {
+    const options = this.getSettingsOptions(group);
 
-      if (speedButton) {
-        this.setSpeed(speedButton.dataset.speed);
-        return;
-      }
+    return options
+      .map((option) => {
+        const isActive = this.isSettingsOptionActive(group, option.value);
 
-      if (githubLink) return;
+        return `
+        <button
+          type="button"
+          class="control-option ${isActive ? "is-active" : ""}"
+          ${option.attr}="${option.value}">
+          ${option.label}
+        </button>
+      `;
+      })
+      .join("");
+  },
 
-      if (noticeToggle) return this.openDrawer();
-      if (event.target.closest(".drawer-overlay")) return this.closeDrawer();
+  renderInitialItem() {
+    const item = this.getNextItem();
+    if (!item) return;
 
-      if (themeToggle) return this.openThemeModal();
+    this.elements.item.textContent = item.text;
+    this.elements.item.style.opacity = "1";
 
-      if (themeButton) {
-        this.setTheme(themeButton.dataset.theme);
-        return this.closeThemeModal();
-      }
+    this.state.lastItemId = item.id;
+    this.rememberItem(item.id);
+    this.rememberType(item.type);
 
-      if (
-        this.elements.themeModal &&
-        !this.elements.themeModal.hidden &&
-        !modalPanel
-      ) {
-        return this.closeThemeModal();
-      }
+    this.state.history = [item];
+    this.state.historyIndex = 0;
+  },
 
-      if (!this.state.items.length) return;
+  renderMessage(message) {
+    this.elements.item.textContent = message;
+    this.elements.item.style.opacity = "1";
+  },
 
-      this.showNextItem();
-      this.resetRotationTimer();
-    });
+  renderItemDirect(item) {
+    const el = this.elements.item;
+    if (!el) return;
 
-    document.addEventListener("keydown", (event) => {
-      const tag = document.activeElement?.tagName;
-      const isTyping =
-        tag === "INPUT" ||
-        tag === "TEXTAREA" ||
-        document.activeElement?.isContentEditable;
+    this.clearTypingTimer();
 
-      if (isTyping) return;
+    el.textContent = item.text;
+    el.style.opacity = "1";
+    el.style.filter = "blur(0px)";
+    el.style.transform = "scale(1)";
+    this.state.lastItemId = item.id;
+  },
 
-      if (event.key === "Escape") {
-        this.closeThemeModal();
-        this.closeDrawer();
-        return;
-      }
+  renderNotifications(notifications) {
+    const container = document.querySelector("#notifications-content");
+    if (!container) return;
 
-      if (event.key === " " || event.code === "Space") {
-        event.preventDefault();
-        if (!this.state.items.length) return;
-        this.showNextItem();
-        this.resetRotationTimer();
-        return;
-      }
+    container.innerHTML = "";
 
-      if (event.key.toLowerCase() === "t") {
-        if (this.elements.themeModal && !this.elements.themeModal.hidden) {
-          this.closeThemeModal();
-        } else {
-          this.openThemeModal();
-        }
-      }
+    if (!notifications.length) {
+      container.innerHTML = `<p class="drawer-empty">Nothing to show.</p>`;
+      return;
+    }
 
-      if (event.key.toLowerCase() === "n") {
-        const drawer = document.getElementById("notices-drawer");
+    notifications.forEach((notification) => {
+      const row = document.createElement("div");
+      row.className = "notification-row";
 
-        if (!drawer) return;
+      const type = notification.type
+        ? notification.type.charAt(0).toUpperCase() + notification.type.slice(1)
+        : "Notification";
 
-        if (drawer.hidden) {
-          this.openDrawer();
-        } else {
-          this.closeDrawer();
-        }
-      }
+      row.innerHTML = `
+        <div class="notification-bar"></div>
+        <div class="notification-content">
+          <span class="notification-type">${type}</span>
+          <p class="notification-text">${notification.text}</p>
+        </div>
+      `;
 
-      if (event.key === "ArrowLeft") {
-        this.goToPreviousItem();
-        this.resetRotationTimer();
-        return;
-      }
-
-      if (event.key === "ArrowRight") {
-        this.goToNextFromHistory();
-        this.resetRotationTimer();
-        return;
-      }
-    });
-
-    document.addEventListener("touchstart", (e) => {
-      this.state.touch.startX = e.touches[0].clientX;
-    });
-
-    document.addEventListener("touchend", (e) => {
-      this.state.touch.endX = e.changedTouches[0].clientX;
-      this.handleSwipe();
+      container.appendChild(row);
     });
   },
 
-  async loadItems() {
-    try {
-      const response = await fetch(this.config.itemsUrl);
+  renderDesktopSettingsOptions() {
+    const container = this.elements.desktopSettingsOptions;
+    if (!container) return;
 
-      if (!response.ok) throw new Error();
+    container.innerHTML = this.getDesktopSettingsMarkup(
+      this.state.activeSettingsGroup,
+    );
+  },
 
-      const data = await response.json();
-      this.state.items = this.normalizeItems(data.items);
+  renderSettingsOptions(group) {
+    const container = document.getElementById("settings-options");
+    if (!container) return;
 
-      if (!this.state.items.length) {
-        this.renderMessage(this.config.messages.empty);
-        return;
-      }
+    const options = this.getSettingsOptions(group);
 
-      this.renderInitialItem();
-      this.scheduleNextItem();
-    } catch {
-      this.renderMessage(this.config.messages.error);
+    container.innerHTML = options
+      .map((option) => {
+        const isActive = this.isSettingsOptionActive(group, option.value);
+
+        return `
+        <button
+          type="button"
+          class="settings-option ${isActive ? "is-active" : ""}"
+          ${option.attr}="${option.value}">
+          ${option.label}
+        </button>
+      `;
+      })
+      .join("");
+  },
+
+  getTypingCharMs() {
+    const map = {
+      slow: 40,
+      normal: 22,
+      fast: 12,
+    };
+
+    return map[this.getCurrentSpeedKey()] || 22;
+  },
+
+  getTypingStartDelayMs() {
+    const map = {
+      slow: 120,
+      normal: 80,
+      fast: 40,
+    };
+
+    return map[this.getCurrentSpeedKey()] || 80;
+  },
+
+  clearTypingTimer() {
+    if (this.state.typingTimer) {
+      clearTimeout(this.state.typingTimer);
+      this.state.typingTimer = null;
+    }
+
+    this.state.isTyping = false;
+
+    if (this.elements.item) {
+      this.elements.item.classList.remove("is-typing");
     }
   },
 
-  normalizeItems(items) {
-    return (items || [])
-      .filter((item) => item && item.active !== false)
-      .filter((item) => typeof item.text === "string" && item.text.trim());
+  typeItem(text) {
+    const el = this.elements.item;
+    if (!el) return;
+
+    this.clearTypingTimer();
+    this.state.isTyping = true;
+
+    el.classList.add("is-typing");
+    el.textContent = "";
+    el.style.opacity = "1";
+    el.style.filter = "blur(0px)";
+    el.style.transform = "scale(1)";
+
+    const speed = this.getCurrentSpeedKey();
+
+    const charMsMap = {
+      slow: 80,
+      normal: 22,
+      fast: 6,
+    };
+
+    const startDelayMap = {
+      slow: 200,
+      normal: 80,
+      fast: 10,
+    };
+
+    const typingCharMs = charMsMap[speed] || 22;
+    const typingStartDelayMs = startDelayMap[speed] || 80;
+
+    let index = 0;
+
+    const typeNext = () => {
+      if (!this.state.isTyping) return;
+
+      el.textContent = text.slice(0, index);
+      index += 1;
+
+      if (index <= text.length) {
+        this.state.typingTimer = setTimeout(typeNext, typingCharMs);
+      } else {
+        this.state.isTyping = false;
+        this.state.typingTimer = null;
+        el.classList.remove("is-typing");
+      }
+    };
+
+    this.state.typingTimer = setTimeout(typeNext, typingStartDelayMs);
+  },
+
+  showNextItem() {
+    const item = this.getNextItem();
+    if (!item || !this.elements.item) return;
+
+    // update history
+    this.state.history = this.state.history.slice(
+      0,
+      this.state.historyIndex + 1,
+    );
+    this.state.history.push(item);
+    this.state.historyIndex++;
+
+    const el = this.elements.item;
+    const duration = this.config.fadeDurationMs;
+
+    this.clearTypingTimer();
+
+    // INSTANT mode
+    if (this.state.mode === "instant") {
+      el.textContent = item.text;
+      el.style.opacity = "1";
+      el.style.filter = "blur(0px)";
+    }
+
+    // FADE mode
+    else if (this.state.mode === "fade") {
+      el.style.transition = `opacity ${duration}ms ease, filter ${duration}ms ease`;
+      el.style.opacity = "0";
+      el.style.filter = "blur(1px)";
+
+      setTimeout(() => {
+        el.textContent = item.text;
+        el.style.opacity = "1";
+        el.style.filter = "blur(0px)";
+      }, duration);
+    }
+
+    // TYPING mode
+    else if (this.state.mode === "typing") {
+      this.typeItem(item.text);
+    }
+
+    // POP mode
+    else if (this.state.mode === "pop") {
+      const duration = 120;
+
+      el.style.transition = `transform ${duration}ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity ${duration}ms ease-out`;
+      el.style.transform = "scale(0.75)";
+      el.style.opacity = "0";
+
+      setTimeout(() => {
+        el.textContent = item.text;
+
+        el.style.transform = "scale(1.16)";
+        el.style.opacity = "1";
+
+        requestAnimationFrame(() => {
+          el.style.transition = `transform ${duration}ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity ${duration}ms ease-out`;
+          el.style.transform = "scale(1)";
+        });
+      }, duration);
+    }
+
+    // update state ONCE
+    this.state.lastItemId = item.id;
+    this.rememberItem(item.id);
+    this.rememberType(item.type);
   },
 
   getItemWeight(item) {
@@ -369,57 +567,6 @@ const Carousel = {
     return this.getWeightedRandomItem(eligibleItems);
   },
 
-  renderInitialItem() {
-    const item = this.getNextItem();
-    if (!item) return;
-
-    this.elements.item.textContent = item.text;
-    this.elements.item.style.opacity = "1";
-
-    this.state.lastItemId = item.id;
-    this.rememberItem(item.id);
-    this.rememberType(item.type);
-
-    this.state.history = [item];
-    this.state.historyIndex = 0;
-  },
-
-  renderMessage(message) {
-    this.elements.item.textContent = message;
-    this.elements.item.style.opacity = "1";
-  },
-
-  showNextItem() {
-    const item = this.getNextItem();
-    if (!item || !this.elements.item) return;
-
-    this.state.history = this.state.history.slice(
-      0,
-      this.state.historyIndex + 1,
-    );
-    this.state.history.push(item);
-    this.state.historyIndex++;
-
-    const el = this.elements.item;
-    const duration = this.config.fadeDurationMs;
-
-    el.style.transition = `opacity ${duration}ms ease, filter ${duration}ms ease`;
-    el.style.opacity = "0";
-    el.style.filter = "blur(1px)";
-
-    setTimeout(() => {
-      el.textContent = item.text;
-
-      el.style.transition = `opacity ${duration}ms ease, filter ${duration}ms ease`;
-      el.style.opacity = "1";
-      el.style.filter = "blur(0px)";
-
-      this.state.lastItemId = item.id;
-      this.rememberItem(item.id);
-      this.rememberType(item.type);
-    }, duration);
-  },
-
   goToPreviousItem() {
     if (this.state.historyIndex <= 0) return;
 
@@ -440,21 +587,20 @@ const Carousel = {
     this.showNextItem();
   },
 
-  renderItemDirect(item) {
-    const el = this.elements.item;
-    if (!el) return;
-
-    el.textContent = item.text;
-    el.style.opacity = "1";
-    el.style.filter = "blur(0px)";
-    this.state.lastItemId = item.id;
-  },
-
   scheduleNextItem() {
     const currentText = this.elements.item.textContent || "";
-    const delay =
+    let delay =
       (this.getDisplayTime(currentText) + this.config.basePauseMs) *
       this.state.speedMultiplier;
+
+    const cadenceFactors =
+      this.state.mode === "typing"
+        ? [0.9, 1, 1.15] // much tighter range
+        : [0.75, 1, 1.35];
+    const randomFactor =
+      cadenceFactors[Math.floor(Math.random() * cadenceFactors.length)];
+
+    delay *= randomFactor;
 
     this.state.rotationTimer = setTimeout(() => {
       this.showNextItem();
@@ -477,7 +623,69 @@ const Carousel = {
     time += punctuation * 350;
     time += 3500;
 
-    return Math.min(Math.max(time, 7000), 14000);
+    if (this.state.mode === "typing") {
+      const speed = this.getCurrentSpeedKey();
+
+      const charMsMap = {
+        slow: 90,
+        normal: 22,
+        fast: 6,
+      };
+
+      const startDelayMap = {
+        slow: 260,
+        normal: 80,
+        fast: 10,
+      };
+
+      const typingCharMs = charMsMap[speed] || 22;
+      const typingStartDelayMs = startDelayMap[speed] || 80;
+
+      let typingTime = typingStartDelayMs;
+
+      for (const char of text) {
+        let delay = typingCharMs;
+
+        if (/[.,!?]/.test(char)) {
+          delay *= 3.5;
+        } else if (char === " ") {
+          delay *= 1.4;
+        }
+
+        typingTime += delay;
+      }
+
+      time += typingTime + 700;
+    }
+
+    return Math.min(Math.max(time, 7000), 30000);
+  },
+
+  async loadItems() {
+    try {
+      const response = await fetch(this.config.itemsUrl);
+
+      if (!response.ok) throw new Error();
+
+      const data = await response.json();
+      this.state.items = this.normalizeItems(data.items);
+
+      if (!this.state.items.length) {
+        this.renderMessage(this.config.messages.empty);
+        return;
+      }
+
+      this.renderInitialItem();
+      this.scheduleNextItem();
+    } catch {
+      this.renderMessage(this.config.messages.error);
+    }
+  },
+
+  normalizeItems(items) {
+    return (items || [])
+      .filter((item) => item && item.active !== false)
+      .filter((item) => typeof item.text === "string" && item.text.trim());
   },
 
   async loadNotifications() {
@@ -490,34 +698,303 @@ const Carousel = {
     }
   },
 
-  renderNotifications(notifications) {
-    const container = document.querySelector("#notifications-content");
-    if (!container) return;
+  openThemeModal() {
+    const modal = this.elements.themeModal;
+    const toggle = this.elements.themeToggle;
+    const panel = modal.querySelector(".theme-modal-panel");
 
-    container.innerHTML = "";
+    if (!modal || !toggle || !panel) return;
 
-    if (!notifications.length) {
-      container.innerHTML = `<p class="drawer-empty">Nothing to show.</p>`;
-      return;
+    const isMobile = window.innerWidth <= 768 || window.innerHeight <= 500;
+
+    if (!isMobile) {
+      const rect = toggle.getBoundingClientRect();
+      panel.style.left = `${rect.left + rect.width / 2}px`;
+      panel.style.top = `${rect.top - 12}px`;
+    } else {
+      panel.style.left = "";
+      panel.style.top = "";
     }
 
-    notifications.forEach((notification) => {
-      const row = document.createElement("div");
-      row.className = "notification-row";
+    modal.hidden = false;
 
-      const type = notification.type
-        ? notification.type.charAt(0).toUpperCase() + notification.type.slice(1)
-        : "Notification";
+    requestAnimationFrame(() => {
+      if (!isMobile) {
+        panel.style.transform = "translateX(-50%) translateY(-100%) scale(1)";
+      } else {
+        panel.style.transform = "none";
+      }
+      panel.style.opacity = "1";
+    });
+  },
 
-      row.innerHTML = `
-        <div class="notification-bar"></div>
-        <div class="notification-content">
-          <span class="notification-type">${type}</span>
-          <p class="notification-text">${notification.text}</p>
-        </div>
-      `;
+  closeThemeModal() {
+    const modal = this.elements.themeModal;
+    const panel = modal.querySelector(".theme-modal-panel");
 
-      container.appendChild(row);
+    if (!modal || !panel) return;
+
+    const isMobile = window.innerWidth <= 768 || window.innerHeight <= 500;
+
+    panel.style.opacity = "0";
+    panel.style.transform = isMobile
+      ? "none"
+      : "translateX(-50%) translateY(-90%) scale(0.96)";
+
+    setTimeout(() => {
+      modal.hidden = true;
+    }, 150);
+  },
+
+  openSettingsModal(group = this.state.activeSettingsGroup) {
+    const modal = this.elements.settingsModal;
+    if (!modal) return;
+
+    modal.hidden = false;
+    this.setSettingsGroup(group);
+
+    requestAnimationFrame(() => {
+      modal.classList.add("is-open");
+    });
+  },
+
+  closeSettingsModal() {
+    const modal = this.elements.settingsModal;
+    if (!modal) return;
+
+    const panel = modal.querySelector(".settings-modal-panel");
+
+    // faster exit
+    panel.style.transition = "transform 0.08s ease, opacity 0.08s ease";
+    panel.style.transform = "scale(0.96)";
+    panel.style.opacity = "0";
+
+    setTimeout(() => {
+      modal.hidden = true;
+
+      // reset for next open
+      panel.style.transition = "";
+      panel.style.transform = "";
+      panel.style.opacity = "";
+    }, 70);
+  },
+
+  openDrawer() {
+    const d = document.getElementById("notices-drawer");
+    d.hidden = false;
+    requestAnimationFrame(() => d.classList.add("is-open"));
+  },
+
+  closeDrawer() {
+    const d = document.getElementById("notices-drawer");
+    d.classList.remove("is-open");
+    setTimeout(() => (d.hidden = true), 250);
+  },
+
+  bindEvents() {
+    document.body.addEventListener("click", (event) => {
+      const speedButton = event.target.closest("[data-speed]");
+      const modeButton = event.target.closest("[data-mode]");
+      const settingsGroupButton = event.target.closest("[data-settings-group]");
+      const settingsToggle = event.target.closest("#settings-toggle");
+      const settingsClose = event.target.closest("#settings-close");
+      const settingsModal = event.target.closest("#settings-modal");
+      const settingsPanel = event.target.closest(".settings-modal-panel");
+      const themeToggle = event.target.closest("#theme-toggle");
+      const themeButton = event.target.closest("[data-theme]");
+      const modalPanel = event.target.closest(".theme-modal-panel");
+      const githubLink = event.target.closest(".bottom-bar a");
+      const noticeToggle = event.target.closest("#notice-toggle");
+
+      if (settingsGroupButton) {
+        const group = settingsGroupButton.dataset.settingsGroup;
+        this.setSettingsGroup(group);
+
+        if (window.innerWidth <= 480) {
+          this.openSettingsModal(group);
+        }
+
+        return;
+      }
+
+      if (speedButton) {
+        this.setSpeed(speedButton.dataset.speed);
+        return;
+      }
+
+      if (modeButton) {
+        this.setMode(modeButton.dataset.mode);
+        return;
+      }
+
+      if (settingsToggle) return this.openSettingsModal();
+      if (settingsClose) return this.closeSettingsModal();
+
+      if (
+        this.elements.settingsModal &&
+        !this.elements.settingsModal.hidden &&
+        settingsModal &&
+        !settingsPanel
+      ) {
+        return this.closeSettingsModal();
+      }
+
+      if (this.elements.settingsModal && !this.elements.settingsModal.hidden) {
+        return;
+      }
+
+      if (githubLink) return;
+
+      if (noticeToggle) return this.openDrawer();
+      if (event.target.closest(".drawer-overlay")) return this.closeDrawer();
+
+      if (themeToggle) return this.openThemeModal();
+
+      if (themeButton) {
+        this.setTheme(themeButton.dataset.theme);
+        return this.closeThemeModal();
+      }
+
+      if (
+        this.elements.themeModal &&
+        !this.elements.themeModal.hidden &&
+        !modalPanel
+      ) {
+        return this.closeThemeModal();
+      }
+
+      if (!this.state.items.length) return;
+
+      this.showNextItem();
+      this.resetRotationTimer();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      const tag = document.activeElement?.tagName;
+      const isTyping =
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        document.activeElement?.isContentEditable;
+
+      if (isTyping) return;
+
+      if (event.key === "Escape") {
+        this.closeThemeModal();
+        this.closeDrawer();
+        this.closeSettingsModal();
+        return;
+      }
+
+      if (event.key === " " || event.code === "Space") {
+        event.preventDefault();
+        if (!this.state.items.length) return;
+        this.showNextItem();
+        this.resetRotationTimer();
+        return;
+      }
+
+      if (event.key.toLowerCase() === "t") {
+        if (this.elements.themeModal && !this.elements.themeModal.hidden) {
+          this.closeThemeModal();
+        } else {
+          this.openThemeModal();
+        }
+      }
+
+      if (event.key.toLowerCase() === "n") {
+        const drawer = document.getElementById("notices-drawer");
+
+        if (!drawer) return;
+
+        if (drawer.hidden) {
+          this.openDrawer();
+        } else {
+          this.closeDrawer();
+        }
+      }
+
+      if (event.key === "ArrowLeft") {
+        this.goToPreviousItem();
+        this.resetRotationTimer();
+        return;
+      }
+
+      if (event.key === "ArrowRight") {
+        this.goToNextFromHistory();
+        this.resetRotationTimer();
+        return;
+      }
+    });
+
+    document.addEventListener("touchstart", (e) => {
+      this.state.touch.startX = e.touches[0].clientX;
+    });
+
+    document.addEventListener("touchend", (e) => {
+      this.state.touch.endX = e.changedTouches[0].clientX;
+      this.handleSwipe();
+    });
+
+    window.addEventListener("resize", () => {
+      this.refreshDesktopSettingsLayout();
+    });
+  },
+
+  handleSwipe() {
+    const threshold = 50;
+    const diff = this.state.touch.endX - this.state.touch.startX;
+
+    if (Math.abs(diff) < threshold) return;
+
+    if (diff > 0) {
+      this.goToPreviousItem();
+    } else {
+      this.goToNextFromHistory();
+    }
+
+    this.resetRotationTimer();
+  },
+
+  formatThemeName(name) {
+    return name.replace(/-/g, " ");
+  },
+
+  measureDesktopSettingsWidth(group) {
+    const probe = document.createElement("div");
+    probe.className = "control-group desktop-controls";
+    probe.id = "desktop-settings-options-probe";
+    probe.style.position = "absolute";
+    probe.style.visibility = "hidden";
+    probe.style.pointerEvents = "none";
+    probe.style.width = "auto";
+    probe.style.whiteSpace = "nowrap";
+    probe.style.left = "-9999px";
+    probe.style.top = "0";
+
+    probe.innerHTML = this.getDesktopSettingsMarkup(group);
+    document.body.appendChild(probe);
+
+    const width = probe.offsetWidth;
+    probe.remove();
+
+    return width;
+  },
+
+  refreshDesktopSettingsLayout() {
+    const container = this.elements.desktopSettingsOptions;
+    if (!container) return;
+
+    container.style.transition = "none";
+    container.style.width = "";
+    container.style.opacity = "";
+    this.renderDesktopSettingsOptions();
+
+    requestAnimationFrame(() => {
+      const nextWidth = this.measureDesktopSettingsWidth(
+        this.state.activeSettingsGroup,
+      );
+      container.style.width = `${nextWidth}px`;
+      container.style.transition = "";
     });
   },
 
@@ -543,33 +1020,6 @@ const Carousel = {
         label.textContent = this.formatThemeName(theme);
       }
     }
-  },
-
-  openDrawer() {
-    const d = document.getElementById("notices-drawer");
-    d.hidden = false;
-    requestAnimationFrame(() => d.classList.add("is-open"));
-  },
-
-  closeDrawer() {
-    const d = document.getElementById("notices-drawer");
-    d.classList.remove("is-open");
-    setTimeout(() => (d.hidden = true), 250);
-  },
-
-  handleSwipe() {
-    const threshold = 50;
-    const diff = this.state.touch.endX - this.state.touch.startX;
-
-    if (Math.abs(diff) < threshold) return;
-
-    if (diff > 0) {
-      this.goToPreviousItem();
-    } else {
-      this.goToNextFromHistory();
-    }
-
-    this.resetRotationTimer();
   },
 };
 
