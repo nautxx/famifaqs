@@ -237,11 +237,21 @@ const Carousel = {
     const modal = this.elements.settingsModal;
     if (!modal) return;
 
-    modal.classList.remove("is-open");
+    const panel = modal.querySelector(".settings-modal-panel");
+
+    // faster exit
+    panel.style.transition = "transform 0.08s ease, opacity 0.08s ease";
+    panel.style.transform = "scale(0.96)";
+    panel.style.opacity = "0";
 
     setTimeout(() => {
       modal.hidden = true;
-    }, 150);
+
+      // reset for next open
+      panel.style.transition = "";
+      panel.style.transform = "";
+      panel.style.opacity = "";
+    }, 70);
   },
 
   getCurrentSpeedKey() {
