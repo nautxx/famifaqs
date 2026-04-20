@@ -375,6 +375,10 @@ const Carousel = {
     }
 
     this.state.isTyping = false;
+
+    if (this.elements.item) {
+      this.elements.item.classList.remove("is-typing");
+    }
   },
 
   typeItem(text) {
@@ -382,9 +386,9 @@ const Carousel = {
     if (!el) return;
 
     this.clearTypingTimer();
-
     this.state.isTyping = true;
 
+    el.classList.add("is-typing");
     el.textContent = "";
     el.style.opacity = "1";
     el.style.filter = "blur(0px)";
@@ -420,6 +424,7 @@ const Carousel = {
       } else {
         this.state.isTyping = false;
         this.state.typingTimer = null;
+        el.classList.remove("is-typing");
       }
     };
 
