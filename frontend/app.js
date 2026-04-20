@@ -147,8 +147,7 @@ const Carousel = {
   },
 
   formatThemeName(name) {
-    return name
-      .replace(/-/g, " ");
+    return name.replace(/-/g, " ");
   },
 
   openThemeModal() {
@@ -188,13 +187,23 @@ const Carousel = {
   openSettingsModal() {
     const modal = this.elements.settingsModal;
     if (!modal) return;
+
     modal.hidden = false;
+
+    requestAnimationFrame(() => {
+      modal.classList.add("is-open");
+    });
   },
 
   closeSettingsModal() {
     const modal = this.elements.settingsModal;
     if (!modal) return;
-    modal.hidden = true;
+
+    modal.classList.remove("is-open");
+
+    setTimeout(() => {
+      modal.hidden = true;
+    }, 150);
   },
 
   bindEvents() {

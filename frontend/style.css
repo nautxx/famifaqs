@@ -504,9 +504,11 @@ kbd {
     .desktop-controls {
         display: none;
     }
+
     .mobile-settings-group {
         display: inline-flex;
     }
+
     .control-bar {
         justify-content: center;
     }
@@ -516,7 +518,12 @@ kbd {
     position: fixed;
     inset: 0;
     z-index: 2500;
-    background: var(--bg-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.35);
+    font-family: var(--font-sans);
 }
 
 .settings-modal[hidden] {
@@ -524,27 +531,45 @@ kbd {
 }
 
 .settings-modal-panel {
-    min-height: 100svh;
+    width: min(92vw, 420px);
+    max-height: min(86svh, 760px);
     box-sizing: border-box;
-    padding: 24px;
+    overflow-y: auto;
+
+    padding: 18px;
+    border-radius: 28px;
+
+    background: var(--surface-color);
+    color: var(--surface-text-color);
+    box-shadow: 0 0 0 0.2em var(--bg-alt-color);
+
     display: flex;
     flex-direction: column;
-    background: var(--bg-color);
-    color: var(--text-color);
+    gap: 18px;
+
+    transform: scale(0.96);
+    opacity: 0;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.settings-modal.is-open .settings-modal-panel {
+    transform: scale(1);
+    opacity: 1;
 }
 
 .settings-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    gap: 12px;
 }
 
 .settings-modal-header h3 {
     margin: 0;
     font-family: var(--font-display);
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 600;
+    color: var(--surface-text-color);
 }
 
 .settings-close-button {
@@ -554,15 +579,21 @@ kbd {
     padding: 0;
     margin: 0;
     font: inherit;
-    color: var(--text-color);
-    cursor: pointer;
+    color: var(--surface-text-color);
     opacity: 0.8;
+    cursor: pointer;
+    transition: opacity 0.1s ease, color 0.1s ease;
+}
+
+.settings-close-button:hover {
+    opacity: 1;
+    color: var(--sub-color);
 }
 
 .settings-modal-body {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 18px;
 }
 
 .settings-section {
@@ -572,17 +603,51 @@ kbd {
     text-align: left;
 }
 
+.settings-section+.settings-section {
+    padding-top: 18px;
+    border-top: 3px solid color-mix(in srgb, var(--surface-text-color) 10%, transparent);
+}
+
 .settings-section h4 {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--sub-color);
 }
 
 .settings-options {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 10px;
+}
+
+.settings-option {
+    appearance: none;
+    width: 100%;
+    border: 0;
+    border-radius: 18px;
+    padding: 18px 16px;
+
+    background: color-mix(in srgb, var(--surface-text-color) 6%, transparent);
+    color: var(--surface-text-color);
+
+    font: inherit;
+    font-size: 1.1rem;
+    font-weight: 500;
+    line-height: 1.1;
+    text-align: center;
+
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease, opacity 0.12s ease;
+}
+
+.settings-option:hover {
+    background: color-mix(in srgb, var(--surface-text-color) 10%, transparent);
+}
+
+.settings-option.is-active {
+    background: var(--accent-color);
+    color: var(--bg-color);
 }
