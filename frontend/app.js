@@ -934,6 +934,10 @@ const Carousel = {
       this.state.touch.endX = e.changedTouches[0].clientX;
       this.handleSwipe();
     });
+
+    window.addEventListener("resize", () => {
+      this.refreshDesktopSettingsLayout();
+    });
   },
 
   handleSwipe() {
@@ -974,6 +978,24 @@ const Carousel = {
     probe.remove();
 
     return width;
+  },
+
+  refreshDesktopSettingsLayout() {
+    const container = this.elements.desktopSettingsOptions;
+    if (!container) return;
+
+    container.style.transition = "none";
+    container.style.width = "";
+    container.style.opacity = "";
+    this.renderDesktopSettingsOptions();
+
+    requestAnimationFrame(() => {
+      const nextWidth = this.measureDesktopSettingsWidth(
+        this.state.activeSettingsGroup,
+      );
+      container.style.width = `${nextWidth}px`;
+      container.style.transition = "";
+    });
   },
 
   setTheme(theme) {
