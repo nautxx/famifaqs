@@ -45,6 +45,9 @@ body.theme-cheesecake {
     --accent-color: #8E2949;
     --text-color: #D91C81;
     --sub-color: #3A3335;
+
+    --hero-color: var(--sub-color);
+    --sub-alt-color: var(--text-color);
 }
 
 body.theme-frozen-llama {
@@ -53,6 +56,9 @@ body.theme-frozen-llama {
     --accent-color: #6D44A5;
     --text-color: #B690FD;
     --sub-color: #FFFFFF;
+
+    --hero-color: var(--sub-color);
+    --sub-alt-color: var(--text-color);
 }
 
 body.theme-laser {
@@ -61,6 +67,9 @@ body.theme-laser {
     --accent-color: #019EAE;
     --text-color: #B82355;
     --sub-color: #DBE7E8;
+
+    --hero-color: var(--sub-color);
+    --sub-alt-color: var(--text-color);
 }
 
 body.theme-lavender {
@@ -69,6 +78,9 @@ body.theme-lavender {
     --accent-color: #E4E3E8;
     --text-color: #E4E3E8;
     --sub-color: #2F2A41;
+
+    --hero-color: var(--sub-color);
+    --sub-alt-color: var(--text-color);
 }
 
 body.theme-muted {
@@ -77,6 +89,9 @@ body.theme-muted {
     --accent-color: #C5B4E2;
     --text-color: #939EAD;
     --sub-color: #B1E3E3;
+
+    --hero-color: var(--sub-color);
+    --sub-alt-color: var(--text-color);
 }
 
 body.theme-nebula {
@@ -85,6 +100,9 @@ body.theme-nebula {
     --accent-color: #BF3C87;
     --text-color: #1BB3B8;
     --sub-color: #828686;
+
+    --hero-color: var(--sub-color);
+    --sub-alt-color: var(--text-color);
 }
 
 body.theme-olivia {
@@ -93,6 +111,9 @@ body.theme-olivia {
     --accent-color: #DEAF9D;
     --text-color: #4D3E3E;
     --sub-color: #F2EFED;
+
+    --hero-color: var(--sub-color);
+    --sub-alt-color: var(--text-color);
 }
 
 body.theme-paper {
@@ -101,6 +122,9 @@ body.theme-paper {
     --accent-color: #444444;
     --text-color: #B2B2B2;
     --sub-color: #444444;
+
+    --hero-color: var(--sub-color);
+    --sub-alt-color: var(--text-color);
 }
 
 body.theme-pastel {
@@ -109,6 +133,9 @@ body.theme-pastel {
     --accent-color: #FBF4B6;
     --text-color: #B4E8FF;
     --sub-color: #6D5C6F;
+
+    --hero-color: var(--sub-color);
+    --sub-alt-color: var(--text-color);
 }
 
 body.theme-quiet {
@@ -127,6 +154,10 @@ body.theme-rgb {
     --accent-color: hsl(var(--hue), 100%, 60%);
     --text-color: #444444;
     --sub-color: #EEEEEE;
+
+    --hero-color: var(--sub-color);
+    --sub-alt-color: var(--accent-color);
+    --bottom-bar-hover-color: var(--accent-color);
 }
 
 body.theme-trackspec {
@@ -151,6 +182,9 @@ body.theme-ube {
     --accent-color: #130F1A;
     --text-color: #706C91;
     --sub-color: #130F1A;
+
+    --hero-color: var(--sub-color);
+    --sub-alt-color: var(--text-color);
 }
 
 .theme-option[data-theme="aguila"] {
