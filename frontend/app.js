@@ -437,7 +437,6 @@ const Carousel = {
       } else {
         this.state.isTyping = false;
         this.state.typingTimer = null;
-        el.classList.remove("is-typing");
       }
     };
 
@@ -778,14 +777,13 @@ const Carousel = {
     const panel = modal.querySelector(".settings-modal-panel");
 
     // faster exit
-    panel.style.transition = "transform 0.08s ease, opacity 0.08s ease";
-    panel.style.transform = "scale(0.96)";
+    panel.style.transition = "transform 0.1s ease, opacity 0.1s ease";
+    panel.style.transform = "scale(0.9)";
     panel.style.opacity = "0";
 
     setTimeout(() => {
       modal.hidden = true;
 
-      // reset for next open
       panel.style.transition = "";
       panel.style.transform = "";
       panel.style.opacity = "";
