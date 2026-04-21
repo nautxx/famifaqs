@@ -592,11 +592,6 @@ h1 {
     text-align: left;
 }
 
-.settings-section+.settings-section {
-    padding-top: 18px;
-    border-top: 3px solid color-mix(in srgb, var(--bg-color) 10%, transparent);
-}
-
 .settings-section h4 {
     margin: 0;
     font-size: 0.85rem;
