@@ -181,6 +181,20 @@ const Carousel = {
         this.updateFocusButton(btn, false);
       }
     });
+
+    // Tap anywhere to exit
+    document.addEventListener("click", (e) => {
+      if (!document.body.classList.contains("focus-mode")) return;
+
+      // prevent instant exit when entering (optional safety)
+      if (e.target.closest("#focus-toggle")) return;
+
+      document.body.classList.remove("focus-mode");
+      localStorage.setItem("focusMode", false);
+
+      const btn = document.getElementById("focus-toggle");
+      if (btn) this.updateFocusButton(btn, false);
+    });
   },
 
   updateFocusButton(btn, isActive) {
