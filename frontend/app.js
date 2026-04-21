@@ -119,6 +119,7 @@ const Carousel = {
     this.bindEvents();
     this.loadItems();
     this.loadNotifications();
+    this.initFocusMode();
   },
 
   cacheElements() {
@@ -146,6 +147,46 @@ const Carousel = {
   applySavedMode() {
     const saved = localStorage.getItem("Carousel-mode") || "fade";
     this.setMode(saved);
+  },
+
+  initFocusMode() {
+    const btn = document.getElementById("focus-toggle");
+    if (!btn) return;
+
+    // Load saved state
+    const saved = localStorage.getItem("focusMode") === "true";
+    if (saved) {
+      document.body.classList.add("focus-mode");
+    }
+
+    // Click handler
+    btn.addEventListener("click", () => {
+      const isActive = document.body.classList.toggle("focus-mode");
+
+      localStorage.setItem("focusMode", isActive);
+      this.updateFocusButton(btn, isActive);
+    });
+
+    // Initial label state
+    this.updateFocusButton(btn, saved);
+
+    // ESC to exit
+    document.addEventListener("keydown", (e) => {
+      if (
+        e.key === "Escape" &&
+        document.body.classList.contains("focus-mode")
+      ) {
+        document.body.classList.remove("focus-mode");
+        localStorage.setItem("focusMode", false);
+        this.updateFocusButton(btn, false);
+      }
+    });
+  },
+
+  updateFocusButton(btn, isActive) {
+    btn.innerHTML = isActive
+      ? '<i class="fa-solid fa-compress"></i> exit'
+      : '<i class="fa-solid fa-expand"></i> focus';
   },
 
   setSpeed(speed) {
