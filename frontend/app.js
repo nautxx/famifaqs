@@ -437,7 +437,6 @@ const Carousel = {
       } else {
         this.state.isTyping = false;
         this.state.typingTimer = null;
-        el.classList.remove("is-typing");
       }
     };
 
