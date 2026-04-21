@@ -215,9 +215,17 @@ const Carousel = {
     });
 
     this.state.activeSettingsGroup = group;
+    this.renderSettingsOptions(group);
 
     if (!container) {
       this.renderDesktopSettingsOptions();
+      return;
+    }
+
+    if (!container.dataset.initialized) {
+      this.renderDesktopSettingsOptions();
+      container.style.width = "auto";
+      container.dataset.initialized = "true";
       return;
     }
 
@@ -226,13 +234,13 @@ const Carousel = {
 
     container.style.width = `${currentWidth}px`;
     container.style.transition = "width 0.25s ease, opacity 0.1s ease";
-
     container.style.opacity = "0";
 
     setTimeout(() => {
       this.renderDesktopSettingsOptions();
       container.style.width = `${nextWidth}px`;
       container.style.opacity = "1";
+
     }, 90);
   },
 
@@ -990,7 +998,7 @@ const Carousel = {
     if (!container) return;
 
     container.style.transition = "none";
-    container.style.width = "";
+    container.style.width = "auto"; // 🔥 reset fully
     container.style.opacity = "";
 
     this.renderDesktopSettingsOptions();
