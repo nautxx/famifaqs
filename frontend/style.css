@@ -659,7 +659,7 @@ kbd {
 }
 
 /* mobile */
-@media (max-width: 480px) {
+@media (max-width: 610px) {
     .desktop-controls {
         display: none;
     }
