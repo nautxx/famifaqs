@@ -105,6 +105,17 @@ h1 {
     padding: 24px 16px;
 }
 
+.item.is-typing::after {
+    content: "";
+    display: inline-block;
+    width: 0.1em;
+    height: 1em;
+    margin-left: 0.08em;
+    background: var(--accent-color);
+    vertical-align: -0.08em;
+    animation: caret-blink 0.9s step-end infinite;
+}
+
 .top-row {
     width: 100%;
     max-width: 1300px;
@@ -592,11 +603,6 @@ h1 {
     text-align: left;
 }
 
-.settings-section+.settings-section {
-    padding-top: 18px;
-    border-top: 3px solid color-mix(in srgb, var(--bg-color) 10%, transparent);
-}
-
 .settings-section h4 {
     margin: 0;
     font-size: 0.85rem;
@@ -743,6 +749,11 @@ kbd {
         opacity: 1;
     }
 
+    .settings-option:hover:not(.is-active) {
+        background: var(--accent-color);
+        color: var(--bg-color);
+    }
+
     #settings-toggle:hover {
         background: var(--sub-color);
         color: var(--bg-color);
@@ -751,15 +762,4 @@ kbd {
     #theme-toggle:hover i {
         opacity: 1;
     }
-}
-
-.item.is-typing::after {
-    content: "";
-    display: inline-block;
-    width: 0.1em;
-    height: 1em;
-    margin-left: 0.08em;
-    background: var(--accent-color);
-    vertical-align: -0.08em;
-    animation: caret-blink 0.9s step-end infinite;
 }
