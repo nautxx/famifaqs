@@ -185,4 +185,4 @@ cython_debug/
 Icon?
 
 # feedloop
-feed.json
+**/feed.json
