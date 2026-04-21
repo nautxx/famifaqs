@@ -743,6 +743,11 @@ kbd {
         opacity: 1;
     }
 
+    .settings-option:hover:not(.is-active) {
+        background: var(--accent-color);
+        color: var(--bg-color);
+    }
+
     #settings-toggle:hover {
         background: var(--sub-color);
         color: var(--bg-color);
