@@ -45,6 +45,7 @@
  *   "olivia" |
  *   "paper" |
  *   "pastel" |
+ *   "sagada-dry-gin" |
  *   "trackspec" |
  *   "trackspec-dark" |
  *   "quiet" |
