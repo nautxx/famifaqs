@@ -826,7 +826,7 @@ kbd {
 
     .control-option:hover,
     .top-row-button:hover {
-        color: var(--sub-color);
+        color: var(--control-hover-color,var(--sub-color));
         opacity: 1;
     }
 
