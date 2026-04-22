@@ -151,49 +151,78 @@ const Carousel = {
 
   initFocusMode() {
     const btn = document.getElementById("focus-toggle");
+    const hint = document.getElementById("focus-hint");
     if (!btn) return;
+
+    const enterFocusMode = () => {
+      document.body.classList.add("focus-mode");
+      localStorage.setItem("focusMode", "true");
+      this.updateFocusButton(btn, true);
+
+      if (hint) {
+        const isTouch =
+          "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+        hint.innerHTML = isTouch
+          ? "tap <kbd>anywhere</kbd> to exit"
+          : "<kbd>esc</kbd> to exit";
+
+        clearTimeout(this._focusHintTimer);
+
+        hint.classList.add("is-visible");
+
+        this._focusHintTimer = setTimeout(() => {
+          hint.classList.remove("is-visible");
+        }, 2500);
+      }
+    };
+
+    const exitFocusMode = () => {
+      document.body.classList.remove("focus-mode");
+      localStorage.setItem("focusMode", "false");
+      this.updateFocusButton(btn, false);
+
+      if (hint) {
+        clearTimeout(this._focusHintTimer);
+        hint.classList.remove("is-visible");
+      }
+    };
+
+    const toggleFocusMode = () => {
+      if (document.body.classList.contains("focus-mode")) {
+        exitFocusMode();
+      } else {
+        enterFocusMode();
+      }
+    };
 
     // Load saved state
     const saved = localStorage.getItem("focusMode") === "true";
     if (saved) {
-      document.body.classList.add("focus-mode");
+      enterFocusMode();
+    } else {
+      this.updateFocusButton(btn, false);
+      if (hint) hint.classList.remove("is-visible");
     }
 
     // Click handler
-    btn.addEventListener("click", () => {
-      const isActive = document.body.classList.toggle("focus-mode");
-
-      localStorage.setItem("focusMode", isActive);
-      this.updateFocusButton(btn, isActive);
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleFocusMode();
     });
-
-    // Initial label state
-    this.updateFocusButton(btn, saved);
 
     // ESC to exit
     document.addEventListener("keydown", (e) => {
-      if (
-        e.key === "Escape" &&
-        document.body.classList.contains("focus-mode")
-      ) {
-        document.body.classList.remove("focus-mode");
-        localStorage.setItem("focusMode", false);
-        this.updateFocusButton(btn, false);
+      if (e.key === "Escape" && document.body.classList.contains("focus-mode")) {
+        exitFocusMode();
       }
     });
 
-    // Tap anywhere to exit
+    // Tap / click anywhere to exit
     document.addEventListener("click", (e) => {
       if (!document.body.classList.contains("focus-mode")) return;
-
-      // prevent instant exit when entering (optional safety)
       if (e.target.closest("#focus-toggle")) return;
-
-      document.body.classList.remove("focus-mode");
-      localStorage.setItem("focusMode", false);
-
-      const btn = document.getElementById("focus-toggle");
-      if (btn) this.updateFocusButton(btn, false);
+      exitFocusMode();
     });
   },
 
@@ -658,7 +687,7 @@ const Carousel = {
 
     const cadenceFactors =
       this.state.mode === "typing"
-        ? [0.9, 1, 1.15] // much tighter range
+        ? [0.9, 1, 1.15]
         : [0.75, 1, 1.35];
     const randomFactor =
       cadenceFactors[Math.floor(Math.random() * cadenceFactors.length)];
@@ -728,7 +757,7 @@ const Carousel = {
     try {
       const response = await fetch(this.config.itemsUrl);
 
-      // 👇 handle missing file (first run)
+      // handle missing file (first run)
       if (response.status === 404) {
         this.renderMessage(
           "No feed found. Copy feed.example.json to feed.json to get started.",
@@ -837,7 +866,6 @@ const Carousel = {
 
     const panel = modal.querySelector(".settings-modal-panel");
 
-    // faster exit
     panel.style.transition = "transform 0.1s ease, opacity 0.1s ease";
     panel.style.transform = "scale(0.9)";
     panel.style.opacity = "0";

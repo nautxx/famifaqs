@@ -147,7 +147,8 @@ body.focus-mode {
 }
 
 body.focus-mode .content {
-    min-height: 100svh;
+    /* min-height: 100svh; */
+    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -710,6 +711,33 @@ body.focus-mode {
 .settings-option.is-active {
     background: var(--accent-color);
     color: var(--bg-color);
+}
+
+.focus-hint {
+    color: var(--bg-color);
+    margin-top: 12px;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    color: var(--text-color);
+    text-align: center;
+    pointer-events: none;
+    /* fade out */
+    opacity: 0;
+    transition: opacity 2s ease;
+}
+
+.focus-hint.is-visible {
+    /* fade in */
+    opacity: 1;
+    transition: opacity 0.1s ease;
+}
+
+body.focus-mode .focus-hint {
+    position: fixed;
+    left: 50%;
+    bottom: 48px;
+    transform: translateX(-50%);
+
 }
 
 kbd {
