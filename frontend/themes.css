@@ -13,7 +13,7 @@
     0%   { --bg-color: #30DDE4; --bg-alt-color: #23cad0; --control-hover-color: #989796;}
     25%  { --bg-color: #EDEBE4; --bg-alt-color: #e1dfd8; --control-hover-color: #E0211F;}
     50%  { --bg-color: #F9E700; --bg-alt-color: #F2CC03; --control-hover-color: #989796;}
-    75%  { --bg-color: #FAB106; --bg-alt-color: #EF8A05; --control-hover-color: #989796;}
+    75%  { --bg-color: #FAB106; --bg-alt-color: #F19303; --control-hover-color: #989796;}
 }
 
 :root {
@@ -168,7 +168,7 @@ body.theme-rgb {
 }
 
 body.theme-sagada-cellar-door {
-    animation: bg-cycle 60s ease-in-out infinite;
+    animation: bg-cycle 180s ease-in-out infinite;
     --bg-color: #30DDE4;
     --bg-alt-color: #23cad0;
     --accent-color: #FFFFFF;
